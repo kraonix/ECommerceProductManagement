@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/services/">
+    <Project Path="src/services/AdminReportingService/AdminReportingService.csproj" />
+    <Project Path="src/services/CatalogService/CatalogService.csproj" />
+    <Project Path="src/services/IdentityService/IdentityService.csproj" />
+    <Project Path="src/services/ProductWorkflowService/ProductWorkflowService.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/CatalogService.Tests/CatalogService.Tests.csproj" />
+    <Project Path="tests/IdentityService.Tests/IdentityService.Tests.csproj" />
+  </Folder>
+</Solution>

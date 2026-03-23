@@ -1,0 +1,59 @@
+# Build output
+bin/
+obj/
+out/
+build/
+dist/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.rsuser
+
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# .NET
+*.nupkg
+*.snupkg
+project.lock.json
+project.fragment.lock.json
+artifacts/
+**/Properties/launchSettings.json
+
+# EF Core Migrations (keep folder, ignore snapshots optionally)
+# Uncomment below if you want to exclude migrations:
+# **/Migrations/
+
+# Angular
+node_modules/
+.angular/
+*.js.map
+
+# Environment / secrets
+*.env
+appsettings.Development.json
+appsettings.Production.json
+
+# Logs
+*.log
+logs/
+
+# Test results
+TestResults/
+coverage/
+coverage-report/
+*.trx
+*.coveragexml
+
+# OS
+Thumbs.db
+.DS_Store
+Desktop.ini
+
+# Rider
+.idea/
