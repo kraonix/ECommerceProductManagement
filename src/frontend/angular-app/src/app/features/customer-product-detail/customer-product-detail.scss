@@ -1,0 +1,87 @@
+.customer-detail-page {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.back-link,
+.preview-link {
+  color: #1d4ed8;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.state.error {
+  background: #fff1f2;
+  border-color: #fecdd3;
+  color: #be123c;
+}
+
+.hero {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.thumb {
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+h2 {
+  margin: 0;
+  color: #111827;
+}
+
+.sku {
+  margin: 4px 0 0;
+  font-family: Consolas, monospace;
+  color: #6b7280;
+}
+
+.description {
+  color: #374151;
+  line-height: 1.5;
+}
+
+.meta-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 10px 0 16px;
+}
+
+.meta-item {
+  border: 1px solid #dbeafe;
+  border-radius: 8px;
+  padding: 10px;
+  background: #f8fbff;
+  .label {
+    display: block;
+    color: #6b7280;
+    font-size: 0.8rem;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+  }
+}
+
+@media (max-width: 900px) {
+  .meta-grid {
+    grid-template-columns: 1fr;
+  }
+}

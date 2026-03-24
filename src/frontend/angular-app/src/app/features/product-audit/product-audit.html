@@ -1,0 +1,63 @@
+<div class="audit-container">
+  <div class="card filters-bar">
+    <div class="filters-row">
+      <label>
+        Product ID
+        <input type="number" min="1" [(ngModel)]="productId" />
+      </label>
+      <label>
+        Search
+        <input type="text" placeholder="Search action, user, remarks" [(ngModel)]="searchTerm" />
+      </label>
+      <button class="btn-load" (click)="loadAudit()" [disabled]="isLoading">Load Audit</button>
+    </div>
+  </div>
+
+  <div class="card status-banner" *ngIf="isLoading">Loading audit history...</div>
+  <div class="card status-banner error" *ngIf="!isLoading && error">{{ error }}</div>
+
+  <div class="audit-body">
+    <div class="card audit-table">
+      <div class="card-title">Audit / History Table</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Change</th>
+            <th>By</th>
+            <th>Time</th>
+            <th>Remarks</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *ngFor="let entry of filteredEntries"
+            [class.selected]="selectedEntry?.timestamp === entry.timestamp && selectedEntry?.action === entry.action"
+            (click)="selectEntry(entry)">
+            <td>{{ entry.action }}</td>
+            <td>{{ entry.actionBy }}</td>
+            <td>{{ entry.timestamp | date:'medium' }}</td>
+            <td>{{ entry.details || '-' }}</td>
+          </tr>
+          <tr *ngIf="!isLoading && filteredEntries.length === 0">
+            <td colspan="4">No audit entries found for this product.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card entry-detail">
+      <div class="card-title">Selected Entry Detail</div>
+      <div class="detail-content">
+        <ng-container *ngIf="selectedEntry; else noSelection">
+          <p><strong>Action:</strong> {{ selectedEntry.action }}</p>
+          <p><strong>Performed By:</strong> {{ selectedEntry.actionBy }}</p>
+          <p><strong>Timestamp:</strong> {{ selectedEntry.timestamp | date:'full' }}</p>
+          <div class="snapshot-box">{{ selectedEntry.details || 'No additional details.' }}</div>
+        </ng-container>
+        <ng-template #noSelection>
+          <p>Select an audit entry from the table to view details.</p>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+</div>

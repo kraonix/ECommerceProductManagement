@@ -7,6 +7,7 @@ namespace AdminReportingService.DTOs
         public int TotalActiveProducts { get; set; }
         public int PendingApprovals { get; set; }
         public int LowStockItems { get; set; }
+        public System.Collections.Generic.List<string> Alerts { get; set; } = new System.Collections.Generic.List<string>();
     }
 
     public class AuditLogDto

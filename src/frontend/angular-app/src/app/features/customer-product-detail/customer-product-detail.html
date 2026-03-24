@@ -1,0 +1,35 @@
+<div class="customer-detail-page">
+  <a class="back-link" routerLink="/customer/products">&larr; Back to listing</a>
+
+  <div class="card state" *ngIf="loading">Loading product details...</div>
+  <div class="card state error" *ngIf="!loading && error">{{ error }}</div>
+
+  <div class="card product-card" *ngIf="!loading && !error && product">
+    <div class="hero">
+      <div class="thumb">{{ product.name.charAt(0) }}</div>
+      <div>
+        <h2>{{ product.name }}</h2>
+        <p class="sku">SKU: {{ product.sku }}</p>
+      </div>
+    </div>
+
+    <p class="description">{{ product.description }}</p>
+
+    <div class="meta-grid">
+      <div class="meta-item">
+        <span class="label">MRP</span>
+        <strong>{{ product.mrp | number:'1.2-2' }}</strong>
+      </div>
+      <div class="meta-item">
+        <span class="label">Sale Price</span>
+        <strong>{{ product.salePrice | number:'1.2-2' }}</strong>
+      </div>
+      <div class="meta-item">
+        <span class="label">Status</span>
+        <strong>{{ product.publishStatus }}</strong>
+      </div>
+    </div>
+
+    <a class="preview-link" [routerLink]="['/customer/preview', product.id]">Open Storefront Preview</a>
+  </div>
+</div>

@@ -1,0 +1,71 @@
+<div class="preview-grid">
+  <div class="card loading-card" *ngIf="loading">
+    <p>Loading storefront preview...</p>
+  </div>
+
+  <div class="card error-card" *ngIf="!loading && error">
+    <p>{{ error }}</p>
+  </div>
+
+  <ng-container *ngIf="!loading && !error">
+    <div class="card preview-main">
+      <div class="card-title">Preview Product Area</div>
+      <div class="preview-body">
+        <div class="product-image">IMG</div>
+        <div class="product-meta">
+          <h3>{{ product?.name }}</h3>
+          <p class="sku">SKU: {{ product?.sku }}</p>
+          <p>{{ product?.description }}</p>
+          <p class="price">
+            <strong>Sale:</strong> {{ product?.salePrice | number:'1.2-2' }} |
+            <strong>MRP:</strong> {{ product?.mrp | number:'1.2-2' }}
+          </p>
+          <button class="cta-button">Buy Now (Preview)</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card stock-snapshot">
+      <div class="card-title">Stock | Price Snapshot</div>
+      <div class="snapshot-row">
+        <span>Status</span>
+        <strong>{{ product?.publishStatus }}</strong>
+      </div>
+      <div class="snapshot-row">
+        <span>Available Qty</span>
+        <strong>{{ product?.availableQty }}</strong>
+      </div>
+      <div class="snapshot-row">
+        <span>Price</span>
+        <strong>{{ product?.salePrice | number:'1.2-2' }}</strong>
+      </div>
+    </div>
+
+    <div class="card related-products">
+      <div class="card-title">Cart Summary / Related Products</div>
+      <div class="related-list" *ngIf="relatedProducts.length > 0; else noRelated">
+        <div class="related-item" *ngFor="let item of relatedProducts">
+          <div>
+            <h4>{{ item.name }}</h4>
+            <small>{{ item.sku }}</small>
+          </div>
+          <strong>{{ item.salePrice | number:'1.2-2' }}</strong>
+        </div>
+      </div>
+      <ng-template #noRelated>
+        <div class="placeholder-content">No related products found.</div>
+      </ng-template>
+    </div>
+
+    <div class="card preview-notes">
+      <div class="card-title">Notes / Preview Validation</div>
+      <div class="placeholder-content">
+        <ul>
+          <li [class.bad]="!product?.description">Description {{ product?.description ? 'present' : 'missing' }}</li>
+          <li [class.bad]="product?.salePrice <= 0">Valid sale price {{ product?.salePrice > 0 ? 'yes' : 'no' }}</li>
+          <li [class.bad]="product?.availableQty <= 0">Stock available {{ product?.availableQty > 0 ? 'yes' : 'no' }}</li>
+        </ul>
+      </div>
+    </div>
+  </ng-container>
+</div>

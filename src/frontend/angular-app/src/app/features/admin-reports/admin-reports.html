@@ -1,0 +1,84 @@
+<div class="reports-container">
+  <div class="card filter-panel">
+    <h3>Report Filters</h3>
+    <div class="filter-group">
+      <label>Date Range</label>
+      <input type="date" class="form-control" [(ngModel)]="filters.fromDate" />
+      <input type="date" class="form-control mt-10" [(ngModel)]="filters.toDate" />
+    </div>
+    <div class="filter-group">
+      <label>Category</label>
+      <select class="form-control" [(ngModel)]="filters.category">
+        <option>All Categories</option>
+        <option>Electronics</option>
+        <option>Apparel</option>
+        <option>Home</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Brand</label>
+      <select class="form-control" [(ngModel)]="filters.brand">
+        <option>All Brands</option>
+        <option>TechCorp</option>
+        <option>PrimeLine</option>
+        <option>CoreGoods</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Owner</label>
+      <select class="form-control" [(ngModel)]="filters.owner">
+        <option>All Owners</option>
+        <option>Admin Team</option>
+        <option>Product Managers</option>
+      </select>
+    </div>
+    <button class="btn-primary w-100" (click)="applyFilters()">Apply Filters</button>
+  </div>
+
+  <div class="reports-main">
+    <div class="kpi-row" *ngIf="!isLoading && !error && summary">
+      <div class="kpi-tile">
+        <div class="kpi-label">Active Products</div>
+        <div class="kpi-value">{{ summary.totalActiveProducts }}</div>
+      </div>
+      <div class="kpi-tile">
+        <div class="kpi-label">Pending Approvals</div>
+        <div class="kpi-value">{{ summary.pendingApprovals }}</div>
+      </div>
+      <div class="kpi-tile">
+        <div class="kpi-label">Low Stock</div>
+        <div class="kpi-value">{{ summary.lowStockItems }}</div>
+      </div>
+    </div>
+
+    <div class="card state-card" *ngIf="isLoading">Loading report summary...</div>
+    <div class="card state-card error" *ngIf="!isLoading && error">{{ error }}</div>
+
+    <div class="card chart-panel">
+      <h3>Publish Rate Trend</h3>
+      <div class="css-chart">
+        <div class="bar-group" *ngFor="let data of chartData">
+          <div class="bar" [style.height.px]="data.value" title="{{ data.value }} Products"></div>
+          <span class="label">{{ data.month }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card download-panel">
+      <div class="download-content">
+        <h3>Export Data</h3>
+        <p>Download the filtered report data as CSV, Excel, or PDF.</p>
+        <button class="btn-success" (click)="downloadReport()" [disabled]="isExporting">
+          {{ isExporting ? 'Generating...' : '↓ Download CSV Export' }}
+        </button>
+      </div>
+    </div>
+
+    <div class="card alert-panel" *ngIf="summary?.alerts?.length">
+      <h3>Operational Alerts</h3>
+      <ul>
+        <li *ngFor="let alert of summary.alerts">{{ alert }}</li>
+      </ul>
+    </div>
+  </div>
+</div>

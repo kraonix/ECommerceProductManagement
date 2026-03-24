@@ -1,0 +1,83 @@
+<div class="wizard-container">
+  <div class="stepper-header card">
+    <div class="step" *ngFor="let s of steps; let i = index" [class.active]="currentStep === i + 1" (click)="setStep(i + 1)">
+      {{ i + 1 }}. {{ s }}
+    </div>
+  </div>
+
+  <div class="wizard-body">
+    <div class="form-area card">
+      <h2>Step {{ currentStep }} - {{ steps[currentStep - 1] }}</h2>
+
+      <div class="wizard-meta">
+        <label>
+          Product ID
+          <input type="number" min="1" [(ngModel)]="productId" />
+        </label>
+      </div>
+
+      <div class="form-placeholder" *ngIf="currentStep === 1 || currentStep === 2">
+        <p>Use product listing/details pages to maintain basic info and media. Continue to pricing/inventory steps.</p>
+      </div>
+
+      <div class="form-grid" *ngIf="currentStep === 3">
+        <label>
+          MRP
+          <input type="number" min="0" [(ngModel)]="pricing.mrp" />
+        </label>
+        <label>
+          Sale Price
+          <input type="number" min="0" [(ngModel)]="pricing.salePrice" />
+        </label>
+        <label>
+          GST (%)
+          <input type="number" min="0" [(ngModel)]="pricing.gst" />
+        </label>
+        <button class="btn-secondary" [disabled]="busy" (click)="savePricing()">Save Pricing</button>
+      </div>
+
+      <div class="form-grid" *ngIf="currentStep === 4">
+        <label>
+          Available Quantity
+          <input type="number" min="0" [(ngModel)]="inventory.availableQty" />
+        </label>
+        <label>
+          Warehouse Location
+          <input type="text" [(ngModel)]="inventory.warehouseLocation" />
+        </label>
+        <button class="btn-secondary" [disabled]="busy" (click)="saveInventory()">Save Inventory</button>
+      </div>
+
+      <div class="form-placeholder" *ngIf="currentStep === 5">
+        <p>Review warnings and readiness score before submit.</p>
+      </div>
+
+      <div class="form-placeholder" *ngIf="currentStep === 6">
+        <p>Final publish stage is controlled by Admin after approval.</p>
+      </div>
+
+      <div class="feedback success" *ngIf="message">{{ message }}</div>
+      <div class="feedback error" *ngIf="error">{{ error }}</div>
+
+      <div class="form-actions">
+        <button class="btn-secondary" *ngIf="currentStep > 1" (click)="prevStep()">Previous</button>
+        <button class="btn-primary" *ngIf="currentStep < 6" (click)="nextStep()">Next</button>
+      </div>
+    </div>
+
+    <div class="review-panel card">
+      <h3>Readiness Score</h3>
+      <div class="score-circle">
+        <span>{{ readinessScore }}%</span>
+      </div>
+      <div class="warnings">
+        <h4>Warnings</h4>
+        <ul>
+          <li *ngFor="let warning of warnings">{{ warning }}</li>
+          <li *ngIf="warnings.length === 0">No blocking warnings.</li>
+        </ul>
+      </div>
+      <button class="btn-publish" [disabled]="currentStep < 5 || busy" (click)="submitForReview()">Submit for Approval</button>
+    </div>
+  </div>
+</div>

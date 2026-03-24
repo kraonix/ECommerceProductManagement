@@ -1,0 +1,40 @@
+<div class="app-container">
+  
+  <header class="modern-top-bar">
+    <div class="left-section">
+      <div class="logo-icon">E</div>
+      <div class="logo-text">Product Console</div>
+    </div>
+    
+    <div class="right-section">
+      <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" placeholder="Quick search..." />
+      </div>
+      <div class="notifications">🔔</div>
+      <div class="user-profile">
+        <div class="avatar">{{ userName.charAt(0).toUpperCase() }}</div>
+        <div class="user-details">
+          <span class="name">{{ userName }}</span>
+          <span class="role">{{ userRole }}</span>
+        </div>
+        <button class="btn-logout" (click)="logout()">Log Out</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="main-layout">
+    <nav class="side-nav card">
+      <ul>
+        <li routerLink="/admin/dashboard" routerLinkActive="active"><span class="nav-icon">📊</span> Dashboard</li>
+        <li routerLink="/admin/catalog" routerLinkActive="active"><span class="nav-icon">📦</span> Catalog</li>
+        <li routerLink="/admin/preview/1" routerLinkActive="active"><span class="nav-icon">🛒</span> Storefront</li>
+        <li routerLink="/admin/audit" routerLinkActive="active"><span class="nav-icon">📋</span> Audit Logs</li>
+        <li *ngIf="isAdmin" routerLink="/admin/reports" routerLinkActive="active"><span class="nav-icon">📈</span> Reports</li>
+      </ul>
+    </nav>
+    <main class="content-area">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

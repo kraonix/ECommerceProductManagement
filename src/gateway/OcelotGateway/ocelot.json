@@ -2,41 +2,41 @@
   "Routes": [
     {
       "DownstreamPathTemplate": "/api/auth/{everything}",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 5011 } ],
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 5010 } ],
       "UpstreamPathTemplate": "/gateway/auth/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
     },
     {
       "DownstreamPathTemplate": "/api/products/{everything}",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 5021 } ],
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 5020 } ],
       "UpstreamPathTemplate": "/gateway/catalog/products/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
     },
     {
       "DownstreamPathTemplate": "/api/workflow/products/{everything}",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 5031 } ],
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 5030 } ],
       "UpstreamPathTemplate": "/gateway/workflow/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
     },
     {
       "DownstreamPathTemplate": "/api/reports/{everything}",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 5041 } ],
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 5040 } ],
       "UpstreamPathTemplate": "/gateway/admin/reports/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
     },
     {
       "DownstreamPathTemplate": "/api/audit/{everything}",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 5041 } ],
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 5040 } ],
       "UpstreamPathTemplate": "/gateway/admin/audit/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
     }
   ],
   "GlobalConfiguration": {
-    "BaseUrl": "https://localhost:5001"
+    "BaseUrl": "http://localhost:5000"
   }
 }

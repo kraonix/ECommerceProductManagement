@@ -1,0 +1,45 @@
+.app-container { display: flex; flex-direction: column; height: 100vh; background-color: #f8fafc; }
+
+.modern-top-bar {
+  background: white; border-bottom: 1px solid #e2e8f0; padding: 0 24px; height: 64px;
+  display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+  
+  .left-section {
+    display: flex; align-items: center; gap: 12px;
+    .logo-icon { background: #3182ce; color: white; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-weight: bold; font-size: 1.2rem; }
+    .logo-text { font-weight: 700; font-size: 1.2rem; color: #2d3748; }
+  }
+
+  .right-section {
+    display: flex; align-items: center; gap: 24px;
+    .search-bar {
+      display: flex; align-items: center; background: #f1f5f9; padding: 6px 12px; border-radius: 20px; width: 250px;
+      .search-icon { font-size: 0.9rem; margin-right: 8px; color: #64748b; }
+      input { background: transparent; border: none; outline: none; width: 100%; font-size: 0.9rem; }
+    }
+    .notifications { font-size: 1.2rem; cursor: pointer; color: #64748b; &:hover { color: #3182ce; } }
+    .user-profile {
+      display: flex; align-items: center; gap: 12px; padding-left: 24px; border-left: 1px solid #e2e8f0;
+      .avatar { width: 36px; height: 36px; background: #ebf8ff; color: #3182ce; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.1rem; }
+      .user-details { display: flex; flex-direction: column; .name { font-weight: 600; font-size: 0.9rem; color: #1e293b; } .role { font-size: 0.8rem; color: #64748b; } }
+      .btn-logout { background: transparent; border: 1px solid #cbd5e0; color: #4a5568; padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; margin-left: 12px; transition: all 0.2s; cursor: pointer; &:hover { background: #f1f5f9; border-color: #94a3b8; } }
+    }
+  }
+}
+
+.main-layout { display: flex; flex: 1; padding: 24px; gap: 24px; overflow: hidden; }
+
+.side-nav {
+  width: 240px; background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); padding: 16px 0; height: max-content;
+  ul {
+    list-style: none; padding: 0; margin: 0;
+    li {
+      padding: 12px 24px; margin: 4px 12px; cursor: pointer; border-radius: 8px; display: flex; align-items: center; color: #475569; font-weight: 500; font-size: 0.95rem; transition: all 0.2s; outline: none; text-decoration: none;
+      .nav-icon { margin-right: 12px; font-size: 1.1rem; }
+      &:hover { background-color: #f1f5f9; color: #0f172a; }
+      &.active { background-color: #eff6ff; color: #2563eb; font-weight: 600; .nav-icon { filter: grayscale(0) contrast(1.2); } }
+    }
+  }
+}
+
+.content-area { flex: 1; overflow-y: auto; padding-right: 8px; }

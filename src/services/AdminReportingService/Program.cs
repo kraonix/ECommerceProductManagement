@@ -25,6 +25,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 builder.Services.AddAuthorization();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddHttpClient();
 builder.Services.AddScoped<ReportingManager>();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

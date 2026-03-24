@@ -1,0 +1,22 @@
+<div class="customer-list-page">
+  <div class="toolbar card">
+    <h2>Storefront Products</h2>
+    <input
+      type="text"
+      placeholder="Search by name or SKU"
+      [(ngModel)]="searchTerm"
+      (input)="filter()" />
+  </div>
+
+  <div class="card state" *ngIf="loading">Loading products...</div>
+  <div class="card state error" *ngIf="!loading && error">{{ error }}</div>
+
+  <div class="grid" *ngIf="!loading && !error">
+    <a class="product-card" *ngFor="let product of filteredProducts" [routerLink]="['/customer/product', product.id]">
+      <div class="thumb">{{ product.name.charAt(0) }}</div>
+      <h3>{{ product.name }}</h3>
+      <p>{{ product.sku }}</p>
+      <span class="status">{{ product.publishStatus }}</span>
+    </a>
+  </div>
+</div>

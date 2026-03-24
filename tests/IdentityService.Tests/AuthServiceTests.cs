@@ -3,7 +3,6 @@ using IdentityService.DTOs;
 using IdentityService.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Moq;
 using NUnit.Framework;
 
 namespace IdentityService.Tests
@@ -21,6 +20,7 @@ namespace IdentityService.Tests
             var options = new DbContextOptionsBuilder<IdentityDbContext>()
                 .UseInMemoryDatabase(Guid.NewGuid().ToString())
                 .Options;
+
             _db = new IdentityDbContext(options);
 
             var configData = new Dictionary<string, string?>
@@ -30,6 +30,7 @@ namespace IdentityService.Tests
                 { "JwtSettings:Audience", "TestAudience" },
                 { "JwtSettings:ExpiryHours", "8" }
             };
+
             var config = new ConfigurationBuilder()
                 .AddInMemoryCollection(configData)
                 .Build();
@@ -41,8 +42,10 @@ namespace IdentityService.Tests
         [TearDown]
         public void TearDown() => _db.Dispose();
 
+        // ✅ SIGNUP TESTS
+
         [Test]
-        public async Task Signup_ValidUser_ReturnsToken()
+        public async Task Signup_ValidUser_ReturnsToken_AndRole()
         {
             var dto = new SignupRequestDto
             {
@@ -51,9 +54,12 @@ namespace IdentityService.Tests
                 Password = "Admin@12345",
                 Role = "Admin"
             };
+
             var result = await _authService.SignupAsync(dto);
+
             Assert.That(result.Token, Is.Not.Empty);
-            Assert.That(result.Email, Is.EqualTo("admin@test.com"));
+            Assert.That(result.Email, Is.EqualTo(dto.Email));
+            Assert.That(result.Role, Is.EqualTo("Admin")); // ✅ added
         }
 
         [Test]
@@ -66,51 +72,13 @@ namespace IdentityService.Tests
                 Password = "Pass@1234",
                 Role = "ProductManager"
             };
+
             await _authService.SignupAsync(dto);
-            Assert.ThrowsAsync<InvalidOperationException>(
+
+            var ex = Assert.ThrowsAsync<InvalidOperationException>(
                 () => _authService.SignupAsync(dto));
-        }
 
-        [Test]
-        public async Task Login_ValidCredentials_ReturnsToken()
-        {
-            var signup = new SignupRequestDto
-            {
-                FullName = "Login User",
-                Email = "login@test.com",
-                Password = "Login@1234",
-                Role = "ProductManager"
-            };
-            await _authService.SignupAsync(signup);
-
-            var login = new LoginRequestDto
-            {
-                Email = "login@test.com",
-                Password = "Login@1234"
-            };
-            var result = await _authService.LoginAsync(login);
-            Assert.That(result.Token, Is.Not.Empty);
-        }
-
-        [Test]
-        public async Task Login_WrongPassword_ThrowsUnauthorized()
-        {
-            var signup = new SignupRequestDto
-            {
-                FullName = "Login User",
-                Email = "wrong@test.com",
-                Password = "Correct@1234",
-                Role = "ProductManager"
-            };
-            await _authService.SignupAsync(signup);
-
-            var login = new LoginRequestDto
-            {
-                Email = "wrong@test.com",
-                Password = "WrongPassword"
-            };
-            Assert.ThrowsAsync<UnauthorizedAccessException>(
-                () => _authService.LoginAsync(login));
+            Assert.That(ex!.Message, Does.Contain("already exists")); // ✅ improved
         }
 
         [Test]
@@ -123,8 +91,78 @@ namespace IdentityService.Tests
                 Password = "Pass@1234",
                 Role = "SuperUser"
             };
-            Assert.ThrowsAsync<ArgumentException>(
+
+            var ex = Assert.ThrowsAsync<ArgumentException>(
                 () => _authService.SignupAsync(dto));
+
+            Assert.That(ex!.Message, Does.Contain("Invalid role")); // ✅ improved
+        }
+
+        // ✅ LOGIN TESTS
+
+        [Test]
+        public async Task Login_ValidCredentials_ReturnsToken_AndRole()
+        {
+            var signup = new SignupRequestDto
+            {
+                FullName = "Login User",
+                Email = "login@test.com",
+                Password = "Login@1234",
+                Role = "ProductManager"
+            };
+
+            await _authService.SignupAsync(signup);
+
+            var login = new LoginRequestDto
+            {
+                Email = "login@test.com",
+                Password = "Login@1234"
+            };
+
+            var result = await _authService.LoginAsync(login);
+
+            Assert.That(result.Token, Is.Not.Empty);
+            Assert.That(result.Role, Is.EqualTo("ProductManager")); // ✅ added
+        }
+
+        [Test]
+        public async Task Login_WrongPassword_ThrowsUnauthorized()
+        {
+            var signup = new SignupRequestDto
+            {
+                FullName = "Login User",
+                Email = "wrong@test.com",
+                Password = "Correct@1234",
+                Role = "ProductManager"
+            };
+
+            await _authService.SignupAsync(signup);
+
+            var login = new LoginRequestDto
+            {
+                Email = "wrong@test.com",
+                Password = "WrongPassword"
+            };
+
+            var ex = Assert.ThrowsAsync<UnauthorizedAccessException>(
+                () => _authService.LoginAsync(login));
+
+            Assert.That(ex!.Message, Does.Contain("Invalid credentials")); // ✅ improved
+        }
+
+        [Test]
+        public void Login_NonExistingUser_ThrowsUnauthorized()
+        {
+            var login = new LoginRequestDto
+            {
+                Email = "nouser@test.com",
+                Password = "AnyPassword"
+            };
+
+            var ex = Assert.ThrowsAsync<UnauthorizedAccessException>(
+                () => _authService.LoginAsync(login));
+
+            Assert.That(ex!.Message, Does.Contain("Invalid credentials")); // ✅ new test
         }
     }
 }
