@@ -1,5 +1,8 @@
 <Solution>
   <Folder Name="/src/" />
+  <Folder Name="/src/gateway/">
+    <Project Path="src/gateway/OcelotGateway/OcelotGateway.csproj" />
+  </Folder>
   <Folder Name="/src/services/">
     <Project Path="src/services/AdminReportingService/AdminReportingService.csproj" />
     <Project Path="src/services/CatalogService/CatalogService.csproj" />
@@ -7,7 +10,9 @@
     <Project Path="src/services/ProductWorkflowService/ProductWorkflowService.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/AdminReportingService.Tests/AdminReportingService.Tests.csproj" />
     <Project Path="tests/CatalogService.Tests/CatalogService.Tests.csproj" />
     <Project Path="tests/IdentityService.Tests/IdentityService.Tests.csproj" />
+    <Project Path="tests/ProductWorkflowService.Tests/ProductWorkflowService.Tests.csproj" />
   </Folder>
 </Solution>
