@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
@@ -14,6 +14,7 @@ import { catchError } from 'rxjs/operators';
 export class StorefrontPreview implements OnInit {
   private route = inject(ActivatedRoute);
   private apiService = inject(ApiService);
+  private cdr = inject(ChangeDetectorRef);
 
   product: any = null;
   relatedProducts: any[] = [];
@@ -47,10 +48,12 @@ export class StorefrontPreview implements OnInit {
           this.error = 'Unable to load storefront data. Verify gateway and catalog service are running.';
         }
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: () => {
         this.error = 'Failed to load storefront preview.';
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -75,13 +78,11 @@ export class StorefrontPreview implements OnInit {
     }
 
     return {
-      id: product.id ?? product.Id ?? this.productId,
+      id: product.productId ?? product.ProductId ?? product.id ?? product.Id ?? this.productId,
       name: product.name ?? product.Name ?? 'Untitled Product',
       sku: product.sku ?? product.Sku ?? 'N/A',
+      brand: product.brand ?? product.Brand ?? 'Unknown Brand',
       description: product.description ?? product.Description ?? 'No description available.',
-      mrp: product.mrp ?? product.MRP ?? 0,
-      salePrice: product.salePrice ?? product.SalePrice ?? 0,
-      availableQty: product.availableQty ?? product.AvailableQty ?? 0,
       publishStatus: product.publishStatus ?? product.PublishStatus ?? 'Draft'
     };
   }

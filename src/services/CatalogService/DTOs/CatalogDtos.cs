@@ -26,6 +26,7 @@ namespace CatalogService.DTOs
         public string SKU { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
         public string Brand { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
         public string PublishStatus { get; set; } = string.Empty;
     }
 

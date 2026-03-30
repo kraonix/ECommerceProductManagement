@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
@@ -13,6 +13,7 @@ import { catchError, finalize, of } from 'rxjs';
 })
 export class Dashboard implements OnInit {
   private apiService = inject(ApiService);
+  private cdr = inject(ChangeDetectorRef);
 
   summary: any = null;
   recentProducts: any[] = [];
@@ -52,11 +53,13 @@ export class Dashboard implements OnInit {
         if (productsFailed && (!this.isAdmin || summaryFailed)) {
           this.error = 'Unable to load dashboard data. Verify gateway and services are running.';
         }
+        this.cdr.detectChanges();
       })
     ).subscribe({
       next: (data: any) => {
         const products = this.normalizeProducts(data);
         this.recentProducts = products.slice(0, 5);
+        this.cdr.detectChanges();
       }
     });
 
@@ -70,6 +73,7 @@ export class Dashboard implements OnInit {
       ).subscribe({
         next: (data: any) => {
           this.summary = this.normalizeSummary(data);
+          this.cdr.detectChanges();
         }
       });
     }

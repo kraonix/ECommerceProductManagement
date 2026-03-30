@@ -1,68 +1,89 @@
-<div class="admin-pm-container">
-  <div class="toolbar card">
-    <div class="search-group">
-      <input type="text" placeholder="Search by Name or SKU..." [(ngModel)]="searchTerm" (input)="filterProducts()" class="search-input" />
+<div class="catalog-page">
+  <div class="card toolbar">
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input type="text" placeholder="Search by exact Name or SKU..." [(ngModel)]="searchTerm" (input)="filterProducts()" class="search-input" />
       <button class="btn-filter">Filters</button>
     </div>
-    <div class="action-group">
-      <button class="btn-secondary" *ngIf="isAdmin">Bulk Update</button>
-      <button class="btn-secondary" *ngIf="isAdmin || isProductManager">Import</button>
-      <button class="btn-secondary">Export</button>
-      <button class="btn-primary" *ngIf="!isContentExecutive" routerLink="/admin/catalog/new">+ Add Product</button>
+    
+    <div class="actions-box">
+      <button class="btn-outline" *ngIf="isAdmin"><span class="icon">▤</span> Bulk Update</button>
+      <button class="btn-outline" *ngIf="isAdmin || isProductManager"><span class="icon">↑</span> Import</button>
+      <button class="btn-outline"><span class="icon">↓</span> Export</button>
+      <button class="btn-primary" *ngIf="!isContentExecutive" routerLink="/admin/catalog/new">
+        <span class="icon">+</span> Add New Product
+      </button>
     </div>
   </div>
 
-  <div class="card status-message success" *ngIf="actionMessage">{{ actionMessage }}</div>
-  <div class="card status-message error" *ngIf="actionError">{{ actionError }}</div>
+  <div class="status-alert success" *ngIf="actionMessage">✓ {{ actionMessage }}</div>
+  <div class="status-alert error" *ngIf="actionError">⚠️ {{ actionError }}</div>
 
-  <div class="product-grid-card card">
-    <div *ngIf="isLoading" class="loading">Loading catalog data...</div>
-    <div *ngIf="!isLoading && loadError" class="loading error">{{ loadError }}</div>
+  <div class="card table-card">
+    <div *ngIf="isLoading" class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading Catalog Data...</p>
+    </div>
+    <div *ngIf="!isLoading && loadError" class="loading-state error">⚠️ {{ loadError }}</div>
     
-    <table *ngIf="!isLoading && !loadError">
-      <thead>
-        <tr>
-          <th>Image</th>
-          <th>SKU</th>
-          <th>Product Name</th>
-          <th>Category</th>
-          <th>Price</th>
-          <th>Status</th>
-          <th>Actions</th>
-          <th *ngIf="isAdmin">Admin Status Management</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let p of filteredProducts">
-          <td><div class="img-box">{{ p.name.charAt(0) }}</div></td>
-          <td class="sku-cell">{{ p.sku }}</td>
-          <td class="name-cell">{{ p.name }}</td>
-          <td>{{ p.categoryId === 1 ? 'Electronics' : (p.categoryId === 2 ? 'Apparel' : 'Home') }}</td>
-          <td class="price-cell">$ --.--</td>
-          <td><span class="badge" [ngClass]="getStatusClass(p.publishStatus)">{{ p.publishStatus }}</span></td>
-          <td class="actions-cell">
-            <button class="btn-icon">✎</button>
-            <button class="btn-icon delete" *ngIf="isAdmin || isProductManager">🗑</button>
-          </td>
-          <td *ngIf="isAdmin" class="status-cell">
-            <select [(ngModel)]="selectedStatusByProduct[p.id]">
-              <option value="">Select status</option>
-              <option value="Approved">Approved</option>
-              <option value="Published">Published</option>
-              <option value="Rejected">Rejected</option>
-              <option value="Archived">Archived</option>
-            </select>
-            <input
-              type="text"
-              placeholder="Remarks (required for reject/archive)"
-              [(ngModel)]="statusRemarkByProduct[p.id]" />
-            <button class="btn-update" [disabled]="isUpdatingStatus" (click)="updateStatus(p)">Apply</button>
-          </td>
-        </tr>
-        <tr *ngIf="filteredProducts.length === 0">
-          <td [attr.colspan]="isAdmin ? 8 : 7" class="empty-state">No products found.</td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="table-responsive" *ngIf="!isLoading && !loadError">
+      <table class="modern-table">
+        <thead>
+          <tr>
+            <th class="col-img">Img</th>
+            <th>Item Details</th>
+            <th>Category</th>
+            <th>Status</th>
+            <th class="col-actions">Actions</th>
+            <th class="col-admin" *ngIf="isAdmin">Admin Workflow</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of filteredProducts" class="table-row">
+            <td class="col-img">
+              <div class="img-thumb">{{ p.name.charAt(0) }}</div>
+            </td>
+            <td>
+              <div class="item-name">{{ p.name }}</div>
+              <div class="item-sku">SKU: {{ p.sku }}</div>
+            </td>
+            <td>
+              <span class="category-badge">{{ p.categoryId === 1 ? 'Electronics' : (p.categoryId === 2 ? 'Apparel' : 'Home') }}</span>
+            </td>
+            <td>
+              <span class="status-badge" [ngClass]="getStatusClass(p.publishStatus)">{{ p.publishStatus }}</span>
+            </td>
+            <td class="col-actions">
+              <button class="icon-btn edit" title="Edit Product">✎</button>
+              <button class="icon-btn delete" *ngIf="isAdmin || isProductManager" title="Delete Product">🗑</button>
+            </td>
+            <td *ngIf="isAdmin" class="col-admin">
+              <div class="admin-workflow-controls">
+                <select class="form-select" [(ngModel)]="selectedStatusByProduct[p.id]">
+                  <option value="">Change Status...</option>
+                  <option value="Approved">Approve</option>
+                  <option value="Published">Publish</option>
+                  <option value="Rejected">Reject</option>
+                  <option value="Ready for Review">Review</option>
+                  <option value="Archived">Archive</option>
+                </select>
+                <div class="workflow-input-group">
+                  <input type="text" class="form-input" placeholder="Remarks..." [(ngModel)]="statusRemarkByProduct[p.id]" />
+                  <button class="btn-go" [disabled]="isUpdatingStatus" (click)="updateStatus(p)">Apply</button>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="filteredProducts.length === 0" class="empty-row">
+            <td [attr.colspan]="isAdmin ? 6 : 5">
+              <div class="empty-state">
+                <span class="empty-icon">📂</span>
+                <p>No products match your search.</p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>

@@ -1,22 +1,73 @@
-<div class="customer-list-page">
-  <div class="toolbar card">
-    <h2>Storefront Products</h2>
-    <input
-      type="text"
-      placeholder="Search by name or SKU"
-      [(ngModel)]="searchTerm"
-      (input)="filter()" />
-  </div>
+<div class="storefront-page">
+  <header class="store-nav">
+    <div class="nav-top">
+      <div class="logo">
+        <span class="logo-icon">🌿</span>
+        <span class="logo-text">MegaStore</span>
+      </div>
+      <div class="nav-search">
+        <select class="search-category"><option>All</option></select>
+        <input type="text" placeholder="Search MegaStore" [(ngModel)]="searchTerm" (input)="filter()" />
+        <button class="btn-search">🔍</button>
+      </div>
+      <div class="nav-links">
+        <div class="nav-item"><span>Returns</span><strong>& Orders</strong></div>
+        <div class="nav-item cart"><span>🛒</span><strong>Cart</strong></div>
+      </div>
+    </div>
+    <div class="nav-sub">
+      <ul>
+        <li><span class="menu-icon">☰</span> All</li>
+        <li>Today's Deals</li>
+        <li>Customer Service</li>
+        <li>Registry</li>
+        <li>Gift Cards</li>
+        <li>Sell</li>
+      </ul>
+    </div>
+  </header>
 
-  <div class="card state" *ngIf="loading">Loading products...</div>
-  <div class="card state error" *ngIf="!loading && error">{{ error }}</div>
+  <section class="hero-carousel">
+    <div class="carousel-track" [style.transform]="'translateX(' + (-currentSlide * 100) + '%)'">
+      <div class="carousel-slide" *ngFor="let slide of carouselSlides" [style.background-color]="slide.bgColor">
+        <div class="slide-content">
+          <h2>{{ slide.title }}</h2>
+          <p>{{ slide.subtitle }}</p>
+          <button class="btn-shop">Shop Now</button>
+        </div>
+      </div>
+    </div>
+    <button class="carousel-btn prev" (click)="prevSlide()">❮</button>
+    <button class="carousel-btn next" (click)="nextSlide()">❯</button>
+  </section>
 
-  <div class="grid" *ngIf="!loading && !error">
-    <a class="product-card" *ngFor="let product of filteredProducts" [routerLink]="['/customer/product', product.id]">
-      <div class="thumb">{{ product.name.charAt(0) }}</div>
-      <h3>{{ product.name }}</h3>
-      <p>{{ product.sku }}</p>
-      <span class="status">{{ product.publishStatus }}</span>
-    </a>
-  </div>
+  <main class="store-content">
+    <div class="loading-state" *ngIf="loading">
+       <div class="spinner"></div> Loading Catalog...
+    </div>
+    <div class="error-state" *ngIf="!loading && error">⚠️ {{ error }}</div>
+
+    <div class="product-grid" *ngIf="!loading && !error">
+      <div class="product-card" *ngFor="let product of filteredProducts" [routerLink]="['/customer/product', product.id]">
+        <div class="card-badge" *ngIf="product.isBestseller">Best Seller</div>
+        <div class="product-image">
+          <div class="placeholder-img">{{ product.name.charAt(0) }}</div>
+        </div>
+        <div class="product-details">
+          <h3 class="product-title" [title]="product.name">{{ product.name }}</h3>
+          <div class="product-brand">{{ product.brand }}</div>
+          <div class="product-description">{{ product.description }}</div>
+          <div class="product-meta">
+            <span class="meta-sku">SKU: {{ product.sku }}</span>
+            <span class="meta-status" [ngClass]="product.publishStatus.toLowerCase()">{{ product.publishStatus }}</span>
+          </div>
+          <button class="btn-add-cart" (click)="addToCart($event, product)">Add to Cart</button>
+        </div>
+      </div>
+      
+      <div class="empty-state" *ngIf="filteredProducts.length === 0">
+        No products match your search. Try another term!
+      </div>
+    </div>
+  </main>
 </div>

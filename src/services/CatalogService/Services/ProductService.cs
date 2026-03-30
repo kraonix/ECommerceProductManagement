@@ -26,7 +26,8 @@ namespace CatalogService.Services
             return await query.Select(p => new ProductResponseDto
             {
                 ProductId = p.ProductId, CategoryId = p.CategoryId,
-                SKU = p.SKU, Name = p.Name, Brand = p.Brand, PublishStatus = p.PublishStatus
+                SKU = p.SKU, Name = p.Name, Brand = p.Brand, 
+                Description = p.Description, PublishStatus = p.PublishStatus
             }).ToListAsync();
         }
 
@@ -34,7 +35,7 @@ namespace CatalogService.Services
         {
             var p = await _db.Products.FindAsync(id);
             if (p == null) return null;
-            return new ProductResponseDto { ProductId = p.ProductId, CategoryId = p.CategoryId, SKU = p.SKU, Name = p.Name, Brand = p.Brand, PublishStatus = p.PublishStatus };
+            return new ProductResponseDto { ProductId = p.ProductId, CategoryId = p.CategoryId, SKU = p.SKU, Name = p.Name, Brand = p.Brand, Description = p.Description, PublishStatus = p.PublishStatus };
         }
 
         public async Task<ProductResponseDto> CreateProductAsync(ProductCreateDto dto)
@@ -52,7 +53,7 @@ namespace CatalogService.Services
             _db.Products.Add(product);
             await _db.SaveChangesAsync();
 
-            return new ProductResponseDto { ProductId = product.ProductId, CategoryId = product.CategoryId, SKU = product.SKU, Name = product.Name, Brand = product.Brand, PublishStatus = product.PublishStatus };
+            return new ProductResponseDto { ProductId = product.ProductId, CategoryId = product.CategoryId, SKU = product.SKU, Name = product.Name, Brand = product.Brand, Description = product.Description, PublishStatus = product.PublishStatus };
         }
 
         public async Task<bool> UpdateProductAsync(int id, ProductUpdateDto dto)

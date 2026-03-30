@@ -14,7 +14,7 @@ h3 { margin-top: 0; color: #2d3748; font-size: 1.1rem; border-bottom: 1px solid 
     label { display: block; font-weight: 600; font-size: 0.9rem; color: #4a5568; margin-bottom: 8px; }
     .form-control { width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 6px; }
   }
-  .btn-primary { background: #3182ce; color: white; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+  .btn-primary { background: var(--amz-green-1); color: white; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; &:hover { background: var(--amz-green-2); } }
   .w-100 { width: 100%; }
 }
 
@@ -27,12 +27,12 @@ h3 { margin-top: 0; color: #2d3748; font-size: 1.1rem; border-bottom: 1px solid 
 }
 
 .kpi-tile {
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
+  background: var(--amz-green-4);
+  border: 1px solid var(--amz-green-3);
   border-radius: 10px;
   padding: 14px;
-  .kpi-label { font-size: 0.85rem; color: #1e3a8a; text-transform: uppercase; }
-  .kpi-value { font-size: 1.9rem; font-weight: 700; color: #1d4ed8; margin-top: 4px; }
+  .kpi-label { font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; }
+  .kpi-value { font-size: 1.9rem; font-weight: 700; color: var(--amz-green-1); margin-top: 4px; }
 }
 
 .state-card {
@@ -51,7 +51,7 @@ h3 { margin-top: 0; color: #2d3748; font-size: 1.1rem; border-bottom: 1px solid 
     display: flex; align-items: flex-end; justify-content: space-around; height: 200px; padding-top: 20px;
     .bar-group {
       display: flex; flex-direction: column; align-items: center; gap: 10px;
-      .bar { width: 40px; background: linear-gradient(to top, #3182ce, #63b3ed); border-radius: 4px 4px 0 0; transition: height 0.5s ease; cursor: pointer; &:hover { opacity: 0.8; } }
+      .bar { width: 40px; background: linear-gradient(to top, var(--amz-green-1), var(--amz-green-3)); border-radius: 4px 4px 0 0; transition: height 0.5s ease; cursor: pointer; &:hover { opacity: 0.8; } }
       .label { font-size: 0.85rem; color: #718096; font-weight: 600; }
     }
   }

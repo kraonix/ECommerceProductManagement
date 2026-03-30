@@ -6,8 +6,9 @@ using NUnit.Framework;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-
-namespace AdminReportingService.Tests
+using Microsoft.AspNetCore.Http;
+using Moq;
+using System.Net.Http;namespace AdminReportingService.Tests
 {
     [TestFixture]
     public class ReportingManagerTests
@@ -21,7 +22,11 @@ namespace AdminReportingService.Tests
             var options = new DbContextOptionsBuilder<AdminDbContext>()
                 .UseInMemoryDatabase(Guid.NewGuid().ToString()).Options;
             _db = new AdminDbContext(options);
-            _manager = new ReportingManager(_db);
+
+            var mockClientFactory = new Mock<IHttpClientFactory>();
+            var mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
+
+            _manager = new ReportingManager(_db, mockClientFactory.Object, mockHttpContextAccessor.Object);
         }
 
         [TearDown]

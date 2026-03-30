@@ -18,7 +18,7 @@
     font-weight: 600;
     color: #888;
     cursor: pointer;
-    &.active { color: #1a73e8; border-color: #90cdf4; background: #ebf8ff; }
+    &.active { color: var(--amz-green-1); border-color: var(--amz-green-2); background: var(--amz-green-4); }
   }
 }
 .wizard-body {

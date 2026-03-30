@@ -78,7 +78,7 @@ namespace IdentityService.Tests
             var ex = Assert.ThrowsAsync<InvalidOperationException>(
                 () => _authService.SignupAsync(dto));
 
-            Assert.That(ex!.Message, Does.Contain("already exists")); // ✅ improved
+            Assert.That(ex!.Message, Does.Contain("already registered")); // ✅ improved
         }
 
         [Test]

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -27,6 +27,7 @@ export class ProductListing implements OnInit {
   statusRemarkByProduct: Record<number, string> = {};
 
   private apiService = inject(ApiService);
+  private cdr = inject(ChangeDetectorRef);
 
   ngOnInit() {
     this.isAdmin = this.userRole === 'Admin';
@@ -39,12 +40,14 @@ export class ProductListing implements OnInit {
         this.products = products.map((p: any) => this.normalizeProduct(p));
         this.filteredProducts = [...this.products];
         this.isLoading = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         this.loadError = err?.status === 401
           ? 'Unauthorized request. Please login again.'
           : 'Unable to load catalog data. Verify gateway and catalog service are running.';
         this.isLoading = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -80,10 +83,12 @@ export class ProductListing implements OnInit {
         product.publishStatus = status;
         this.actionMessage = `Status updated for ${product.sku}.`;
         this.isUpdatingStatus = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         this.actionError = err?.error?.message || 'Failed to update status.';
         this.isUpdatingStatus = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -94,7 +99,7 @@ export class ProductListing implements OnInit {
 
   private normalizeProduct(product: any) {
     return {
-      id: product.id ?? product.Id ?? 0,
+      id: product.productId ?? product.ProductId ?? product.id ?? product.Id ?? 0,
       sku: product.sku ?? product.Sku ?? 'N/A',
       name: product.name ?? product.Name ?? 'Untitled Product',
       categoryId: product.categoryId ?? product.CategoryId ?? 0,
