@@ -1,5 +1,6 @@
 using IdentityService.Data;
 using IdentityService.Services;
+using IdentityService.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -42,6 +43,9 @@ builder.Services.AddAuthorization();
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<AuthService>();
 
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
+
 builder.Services.AddControllers();
 
 // Swagger with JWT support
@@ -82,6 +86,8 @@ var app = builder.Build();
 
 app.UseSwagger();
 app.UseSwaggerUI();
+
+app.UseExceptionHandler();
 
 app.UseAuthentication();
 app.UseAuthorization();

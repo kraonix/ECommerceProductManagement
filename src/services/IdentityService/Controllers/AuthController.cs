@@ -1,6 +1,8 @@
 using IdentityService.DTOs;
 using IdentityService.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace IdentityService.Controllers
 {
@@ -18,37 +20,61 @@ namespace IdentityService.Controllers
         [HttpPost("signup")]
         public async Task<IActionResult> Signup([FromBody] SignupRequestDto dto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-            try
-            {
-                var result = await _authService.SignupAsync(dto);
-                return Ok(result);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Conflict(new { message = ex.Message });
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            return Ok(await _authService.SignupAsync(dto));
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequestDto dto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-            try
-            {
-                var result = await _authService.LoginAsync(dto);
-                return Ok(result);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(new { message = ex.Message });
-            }
+            return Ok(await _authService.LoginAsync(dto));
+        }
+
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequestDto dto)
+        {
+            return Ok(await _authService.RefreshTokenAsync(dto));
+        }
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequestDto dto)
+        {
+            // Note: Normally emails this, but mapped to direct JSON response for UX testing
+            var token = await _authService.ForgotPasswordAsync(dto.Email);
+            return Ok(new { message = "Password reset instructions initialized", resetToken = token });
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequestDto dto)
+        {
+            await _authService.ResetPasswordAsync(dto.Token, dto.NewPassword);
+            return Ok(new { message = "Password has been successfully reset" });
+        }
+
+        [Authorize]
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequestDto dto)
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            await _authService.ChangePasswordAsync(userId, dto.CurrentPassword, dto.NewPassword);
+            return Ok(new { message = "Your password was effectively updated." });
+        }
+
+        [Authorize]
+        [HttpPost("revoke")]
+        public async Task<IActionResult> Revoke()
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            await _authService.RevokeTokenAsync(userId);
+            return Ok(new { message = "Token successfully revoked permanently." });
+        }
+
+        [Authorize]
+        [HttpGet("me")]
+        public async Task<IActionResult> GetProfile()
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            var profile = await _authService.GetUserProfileAsync(userId);
+            return Ok(profile);
         }
     }
 }

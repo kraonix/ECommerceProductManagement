@@ -4,6 +4,13 @@ import { FormsModule, NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
 
+export enum AuthMode {
+  LOGIN,
+  SIGNUP,
+  FORGOT_PASSWORD,
+  RESET_PASSWORD
+}
+
 @Component({
   selector: 'app-login',
   imports: [CommonModule, FormsModule],
@@ -11,22 +18,30 @@ import { ApiService } from '../../../core/services/api.service';
   styleUrl: './login.scss'
 })
 export class Login {
-  isLoginMode = true;
+  // Enum exposure for HTML template binding
+  AuthMode = AuthMode;
+  currentMode: AuthMode = AuthMode.LOGIN;
+
   isLoading = false;
   errorMessage = '';
+  successMessage = '';
 
+  // Data bindings
   loginData = { email: '', password: '' };
   signupData = { fullName: '', email: '', password: '', role: 'Admin' };
+  forgotData = { email: '' };
+  resetData = { token: '', newPassword: '' };
 
   private apiService = inject(ApiService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
 
-  toggleMode(form: NgForm) {
-    this.isLoginMode = !this.isLoginMode;
+  setMode(mode: AuthMode, form?: NgForm) {
+    this.currentMode = mode;
     this.errorMessage = '';
-    form.resetForm();
-    if (!this.isLoginMode) this.signupData.role = 'Admin';
+    this.successMessage = '';
+    if (form) form.resetForm();
+    if (mode === AuthMode.SIGNUP) this.signupData.role = 'Admin';
     this.cdr.detectChanges();
   }
 
@@ -39,48 +54,80 @@ export class Login {
 
     this.isLoading = true;
     this.errorMessage = '';
+    this.successMessage = '';
     this.cdr.detectChanges();
 
-    const request = this.isLoginMode 
-      ? this.apiService.login(this.loginData)
-      : this.apiService.signup(this.signupData);
-
-    request.subscribe({
-      next: (res) => this.handleAuthSuccess(res),
-      error: (err) => this.handleAuthError(err)
-    });
+    if (this.currentMode === AuthMode.LOGIN) {
+      this.apiService.login(this.loginData).subscribe({
+        next: (res) => this.handleAuthSuccess(res),
+        error: (err) => this.handleAuthError(err)
+      });
+    } else if (this.currentMode === AuthMode.SIGNUP) {
+      this.apiService.signup(this.signupData).subscribe({
+        next: (res) => this.handleAuthSuccess(res),
+        error: (err) => this.handleAuthError(err)
+      });
+    } else if (this.currentMode === AuthMode.FORGOT_PASSWORD) {
+      this.apiService.forgotPassword(this.forgotData.email).subscribe({
+        next: (res) => {
+          this.isLoading = false;
+          // Capture the generated token explicitly returned from backend mock logic
+          const simulatedToken = res.resetToken; 
+          this.successMessage = `Instructions prepared! (Auto-redirecting to Reset panel simply to mimic email click...)`;
+          this.cdr.detectChanges();
+          
+          setTimeout(() => {
+            this.resetData.token = simulatedToken; // Auto-populate the mock token
+            this.setMode(AuthMode.RESET_PASSWORD);
+            this.successMessage = 'Paste the temporary token received in your email.';
+            this.cdr.detectChanges();
+          }, 2500);
+        },
+        error: (err) => this.handleAuthError(err)
+      });
+    } else if (this.currentMode === AuthMode.RESET_PASSWORD) {
+      this.apiService.resetPassword(this.resetData.token, this.resetData.newPassword).subscribe({
+        next: (res) => {
+          this.isLoading = false;
+          this.successMessage = 'Password universally updated! You can now log in safely.';
+          this.setMode(AuthMode.LOGIN);
+          this.cdr.detectChanges();
+        },
+        error: (err) => this.handleAuthError(err)
+      });
+    }
   }
 
   private handleAuthSuccess(response: any) {
     this.isLoading = false;
     this.cdr.detectChanges();
+    
+    // Explicit extended auth cache insertion 
     localStorage.setItem('jwt_token', response.token);
+    localStorage.setItem('refresh_token', response.refreshToken);
     localStorage.setItem('user_name', response.fullName);
     localStorage.setItem('user_role', response.role);
+    
     const role = (response.role || '').trim();
     const roleHome = role === 'Customer' ? '/customer/products' : '/admin/dashboard';
     this.router.navigate([roleHome]);
   }
 
   private handleAuthError(error: any) {
-    this.isLoading = false; // CRITICAL: Always unfreeze UI
-    console.error('Auth Error Payload:', error); // Log for debugging
+    this.isLoading = false;
+    console.error('Core Auth Rejection Payload:', error);
 
     if (error.status === 0) {
-      this.errorMessage = 'Network Error: Cannot connect to API Gateway. Ensure Ocelot is running on port 5000.';
-      this.cdr.detectChanges();
-      return;
-    }
-
-    // Safely parse .NET Validation Errors (400 Bad Request)
-    if (error.error && error.error.errors) {
+      this.errorMessage = 'Network isolation detected. Please verify gateway servers are booted and live.';
+    } else if (error.error && error.error.detail) {
+      // Direct Exception Mapping via GlobalExceptionHandler
+      this.errorMessage = error.error.detail;
+    } else if (error.error && error.error.errors) {
+      // Standard validation boundaries breaking
       this.errorMessage = Object.values(error.error.errors).flat().join(' | ');
-      this.cdr.detectChanges();
-      return;
+    } else {
+      this.errorMessage = error.error?.message || 'Access interaction prohibited by authorization schema boundaries.';
     }
-
-    // Parse custom Backend thrown exceptions
-    this.errorMessage = error.error?.message || 'Invalid credentials. Please try again.';
     this.cdr.detectChanges();
   }
 }

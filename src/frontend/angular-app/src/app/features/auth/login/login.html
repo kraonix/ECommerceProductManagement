@@ -1,78 +1,108 @@
-<div class="auth-wrapper">
-  
-  <header class="top-bar minimal">
-    <div class="logo-container">
-      <div class="logo-icon">E</div>
-      <div class="logo-text">ECommerce Console</div>
-    </div>
-  </header>
+<div class="auth-workspace">
+  <!-- 3D Background Decorative Shapes -->
+  <div class="shape ring-1"></div>
+  <div class="shape ring-2"></div>
+  <div class="shape blob-1"></div>
+  <div class="shape blob-2"></div>
+  <div class="shape wave-1"></div>
 
-  <div class="auth-container">
-    <div class="auth-grid">
+  <div class="glass-backdrop">
+    <div class="glass-card">
       
-      <div class="brand-panel">
-        <div class="brand-content">
-          <div class="brand-icon">🛍️</div>
-          <h2>Product Console</h2>
-          <p>Centralized Catalog Management</p>
-          <ul class="feature-list">
-            <li>✓ Secure Role-Based Access</li>
-            <li>✓ Automated Approval Workflows</li>
-            <li>✓ Live Storefront Previews</li>
-          </ul>
-        </div>
+      <div class="auth-header">
+        <div class="logo">Product Console</div>
+        <h2 *ngIf="currentMode === AuthMode.LOGIN">Login</h2>
+        <h2 *ngIf="currentMode === AuthMode.SIGNUP">Register</h2>
+        <h2 *ngIf="currentMode === AuthMode.FORGOT_PASSWORD">Recovery</h2>
+        <h2 *ngIf="currentMode === AuthMode.RESET_PASSWORD">Reset</h2>
       </div>
 
-      <div class="auth-card">
-        <div class="form-wrapper">
-          <h2 class="form-title">{{ isLoginMode ? 'Welcome Back' : 'Create Account' }}</h2>
-          
-          <div class="alert error-alert" *ngIf="errorMessage">{{ errorMessage }}</div>
+      <div class="alert error" *ngIf="errorMessage">{{ errorMessage }}</div>
+      <div class="alert success" *ngIf="successMessage">{{ successMessage }}</div>
 
-          <form (ngSubmit)="onSubmit(authForm)" #authForm="ngForm" novalidate>
-            
-            <div class="input-group" *ngIf="!isLoginMode">
-              <label>Full Name</label>
-              <input type="text" name="fullName" [(ngModel)]="signupData.fullName" required minlength="2" #fullName="ngModel" [ngClass]="{'is-invalid': fullName.invalid && fullName.touched}" placeholder="John Doe" />
-              <div class="validation-error" *ngIf="fullName.invalid && fullName.touched">Full name is required.</div>
-            </div>
+      <form #authForm="ngForm" (ngSubmit)="onSubmit(authForm)" class="auth-form">
 
-            <div class="input-group">
-              <label>Email Address</label>
-              <input type="email" name="email" [ngModel]="isLoginMode ? loginData.email : signupData.email" (ngModelChange)="isLoginMode ? (loginData.email = $event) : (signupData.email = $event)" required email #email="ngModel" [ngClass]="{'is-invalid': email.invalid && email.touched}" placeholder="admin@ecommerce.local" />
-              <div class="validation-error" *ngIf="email.errors?.['required'] && email.touched">Email is required.</div>
-              <div class="validation-error" *ngIf="email.errors?.['email'] && email.touched">Please enter a valid email.</div>
-            </div>
-
-            <div class="input-group">
-              <label>Password</label>
-              <input type="password" name="password" [ngModel]="isLoginMode ? loginData.password : signupData.password" (ngModelChange)="isLoginMode ? (loginData.password = $event) : (signupData.password = $event)" required minlength="8" #password="ngModel" [ngClass]="{'is-invalid': password.invalid && password.touched}" placeholder="••••••••" />
-              <div class="validation-error" *ngIf="password.errors?.['required'] && password.touched">Password is required.</div>
-              <div class="validation-error" *ngIf="password.errors?.['minlength'] && password.touched">Password must be at least 8 characters.</div>
-            </div>
-
-            <div class="input-group" *ngIf="!isLoginMode">
-              <label>System Role</label>
-              <select name="role" [(ngModel)]="signupData.role" required>
-                <option value="Admin">Admin</option>
-                <option value="ProductManager">Product Manager</option>
-                <option value="ContentExecutive">Content Executive</option>
-              </select>
-            </div>
-
-            <button type="submit" class="btn-submit" [disabled]="isLoading">
-              <span *ngIf="isLoading" class="spinner">↻</span>
-              {{ isLoading ? 'Processing...' : (isLoginMode ? 'Login to Console' : 'Create Account') }}
-            </button>
-          </form>
-
-          <div class="toggle-mode">
-            <p *ngIf="isLoginMode">Don't have an account? <a href="javascript:void(0)" (click)="toggleMode(authForm)">Signup here</a></p>
-            <p *ngIf="!isLoginMode">Already have an account? <a href="javascript:void(0)" (click)="toggleMode(authForm)">Login here</a></p>
+        <!-- LOGIN -->
+        <ng-container *ngIf="currentMode === AuthMode.LOGIN">
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" name="email" [(ngModel)]="loginData.email" required class="glass-input" placeholder="user@example.com" />
           </div>
-        </div>
-      </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" name="password" [(ngModel)]="loginData.password" required class="glass-input" placeholder="••••••••" />
+          </div>
+          <div class="forgot-row">
+            <a href="javascript:void(0)" (click)="setMode(AuthMode.FORGOT_PASSWORD, authForm)">Forgot Password?</a>
+          </div>
+        </ng-container>
 
+        <!-- SIGNUP -->
+        <ng-container *ngIf="currentMode === AuthMode.SIGNUP">
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" name="fullName" [(ngModel)]="signupData.fullName" required class="glass-input" placeholder="John Doe" />
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" name="email" [(ngModel)]="signupData.email" required class="glass-input" placeholder="user@example.com" />
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" name="password" [(ngModel)]="signupData.password" required class="glass-input" placeholder="••••••••" />
+          </div>
+          <div class="form-group">
+            <label>Role</label>
+            <select name="role" [(ngModel)]="signupData.role" required class="glass-input">
+              <option value="Admin">System Administrator</option>
+              <option value="ProductManager">Product Manager</option>
+              <option value="ContentExecutive">Content Executive</option>
+              <option value="Customer">Standard Customer</option>
+            </select>
+          </div>
+        </ng-container>
+
+        <!-- FORGOT PASSWORD -->
+        <ng-container *ngIf="currentMode === AuthMode.FORGOT_PASSWORD">
+          <div class="form-group">
+            <label>Account Email</label>
+            <input type="email" name="forgotEmail" [(ngModel)]="forgotData.email" required class="glass-input" placeholder="user@example.com" />
+          </div>
+        </ng-container>
+
+        <!-- RESET PASSWORD -->
+        <ng-container *ngIf="currentMode === AuthMode.RESET_PASSWORD">
+          <div class="form-group">
+            <label>Validation Token</label>
+            <input type="text" name="resetToken" [(ngModel)]="resetData.token" required class="glass-input mono" placeholder="Paste token here" />
+          </div>
+          <div class="form-group">
+            <label>New Password</label>
+            <input type="password" name="newPassword" [(ngModel)]="resetData.newPassword" required class="glass-input" placeholder="••••••••" />
+          </div>
+        </ng-container>
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn-glass" [disabled]="isLoading || authForm.invalid">
+          <span class="spinner" *ngIf="isLoading"></span>
+          <ng-container *ngIf="!isLoading">
+            {{ currentMode === AuthMode.LOGIN ? 'Sign in' : '' }}
+            {{ currentMode === AuthMode.SIGNUP ? 'Register' : '' }}
+            {{ currentMode === AuthMode.FORGOT_PASSWORD ? 'Send Token' : '' }}
+            {{ currentMode === AuthMode.RESET_PASSWORD ? 'Confirm Reset' : '' }}
+          </ng-container>
+        </button>
+
+        <!-- Footer Toggles -->
+        <div class="auth-footer">
+          <ng-container *ngIf="currentMode === AuthMode.LOGIN">
+            Don't have an account yet? <a href="javascript:void(0)" (click)="setMode(AuthMode.SIGNUP, authForm)">Register for free</a>
+          </ng-container>
+          <ng-container *ngIf="currentMode !== AuthMode.LOGIN">
+            <a href="javascript:void(0)" (click)="setMode(AuthMode.LOGIN, authForm)">Return to Sign in</a>
+          </ng-container>
+        </div>
+      </form>
     </div>
   </div>
 </div>

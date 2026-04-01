@@ -40,5 +40,13 @@ namespace IdentityService.Services
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
+        public string GenerateRefreshToken()
+        {
+            var randomNumber = new byte[32];
+            using var rng = System.Security.Cryptography.RandomNumberGenerator.Create();
+            rng.GetBytes(randomNumber);
+            return Convert.ToBase64String(randomNumber);
+        }
     }
 }

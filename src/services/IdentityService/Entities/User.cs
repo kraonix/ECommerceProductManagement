@@ -23,5 +23,13 @@ namespace IdentityService.Entities
         public bool IsActive { get; set; } = true;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        [MaxLength(256)]
+        public string? RefreshToken { get; set; }
+        public DateTime? RefreshTokenExpiryTime { get; set; }
+
+        [MaxLength(256)]
+        public string? PasswordResetToken { get; set; }
+        public DateTime? PasswordResetTokenExpiry { get; set; }
     }
 }

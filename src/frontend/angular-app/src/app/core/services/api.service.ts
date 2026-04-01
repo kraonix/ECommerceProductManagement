@@ -19,6 +19,19 @@ export class ApiService {
   login(credentials: any): Observable<any> { return this.withTimeout(this.http.post(`${this.gatewayUrl}/auth/login`, credentials)); }
   signup(userData: any): Observable<any> { return this.withTimeout(this.http.post(`${this.gatewayUrl}/auth/signup`, userData)); }
   
+  refreshToken(tokenId: string, refreshTokenId: string): Observable<any> {
+    return this.withTimeout(this.http.post(`${this.gatewayUrl}/auth/refresh-token`, { token: tokenId, refreshToken: refreshTokenId }));
+  }
+  forgotPassword(email: string): Observable<any> {
+    return this.withTimeout(this.http.post(`${this.gatewayUrl}/auth/forgot-password`, { email }));
+  }
+  resetPassword(token: string, newPassword: string): Observable<any> {
+    return this.withTimeout(this.http.post(`${this.gatewayUrl}/auth/reset-password`, { token, newPassword }));
+  }
+  changePassword(currentPassword: string, newPassword: string): Observable<any> {
+    return this.withTimeout(this.http.post(`${this.gatewayUrl}/auth/change-password`, { currentPassword, newPassword }));
+  }
+  
   getDashboardSummary(): Observable<any> { return this.withTimeout(this.http.get(`${this.gatewayUrl}/admin/reports/dashboard`)); }
   getProducts(): Observable<any> { return this.withTimeout(this.http.get(`${this.gatewayUrl}/catalog/products`)); }
   getProductById(productId: number): Observable<any> { return this.withTimeout(this.http.get(`${this.gatewayUrl}/catalog/products/${productId}`)); }
