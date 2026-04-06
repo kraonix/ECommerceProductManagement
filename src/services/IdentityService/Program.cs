@@ -84,6 +84,8 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
+app.UseMiddleware<LoggingMiddleware>();
+
 app.UseSwagger();
 app.UseSwaggerUI();
 
