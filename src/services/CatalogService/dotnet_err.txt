@@ -1,0 +1,13 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+E:\Project-Ecommerce\ECommerceProductManagement\src\services\CatalogService\Data\CatalogDbContextSeed.cs(16,69): error CS0117: 'Category' does not contain a definition for 'Description' [E:\Project-Ecommerce\ECommerceProductManagement\src\services\CatalogService\CatalogService.csproj]
+E:\Project-Ecommerce\ECommerceProductManagement\src\services\CatalogService\Data\CatalogDbContextSeed.cs(17,58): error CS0117: 'Category' does not contain a definition for 'Description' [E:\Project-Ecommerce\ECommerceProductManagement\src\services\CatalogService\CatalogService.csproj]
+
+Build FAILED.
+
+E:\Project-Ecommerce\ECommerceProductManagement\src\services\CatalogService\Data\CatalogDbContextSeed.cs(16,69): error CS0117: 'Category' does not contain a definition for 'Description' [E:\Project-Ecommerce\ECommerceProductManagement\src\services\CatalogService\CatalogService.csproj]
+E:\Project-Ecommerce\ECommerceProductManagement\src\services\CatalogService\Data\CatalogDbContextSeed.cs(17,58): error CS0117: 'Category' does not contain a definition for 'Description' [E:\Project-Ecommerce\ECommerceProductManagement\src\services\CatalogService\CatalogService.csproj]
+    0 Warning(s)
+    2 Error(s)
+
+Time Elapsed 00:00:01.13

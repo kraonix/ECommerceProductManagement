@@ -1,9 +1,10 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterOutlet, RouterModule, Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-layout',
-  imports: [RouterOutlet, RouterModule],
+  imports: [RouterOutlet, RouterModule, CommonModule],
   templateUrl: './layout.html',
   styleUrl: './layout.scss'
 })
@@ -14,10 +15,16 @@ export class Layout {
   isAdmin = this.normalizedRole === 'admin';
   private router = inject(Router);
 
+  // Sidebar collapse state
+  sidebarCollapsed = signal(false);
+  userMenuOpen = signal(false);
+
+  toggleSidebar() { this.sidebarCollapsed.update(v => !v); }
+  toggleUserMenu() { this.userMenuOpen.update(v => !v); }
+  closeUserMenu() { this.userMenuOpen.set(false); }
+
   logout() {
-    localStorage.removeItem('jwt_token');
-    localStorage.removeItem('user_name');
-    localStorage.removeItem('user_role');
+    localStorage.clear();
     this.router.navigate(['/auth/login']);
   }
 }

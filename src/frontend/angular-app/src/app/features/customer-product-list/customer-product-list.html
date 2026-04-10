@@ -1,73 +1,341 @@
-<div class="storefront-page">
-  <header class="store-nav">
-    <div class="nav-top">
-      <div class="logo">
-        <span class="logo-icon">🌿</span>
-        <span class="logo-text">MegaStore</span>
+<!-- ============================================================
+     OBSIDIAN ENTERPRISE STOREFRONT — Customer Storefront
+     Pixel-accurate rebuild from Stitch "Customer Storefront - Desktop"
+     ============================================================ -->
+
+<div class="storefront-root">
+
+  <!-- ===== STICKY HEADER ===== -->
+  <header class="sf-header">
+    <div class="sf-header-inner">
+      <!-- Logo -->
+      <div class="sf-logo">
+        <div class="sf-logo-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="white"/>
+          </svg>
+        </div>
+        <span class="sf-logo-text">Obsidian</span>
       </div>
-      <div class="nav-search">
-        <select class="search-category"><option>All</option></select>
-        <input type="text" placeholder="Search MegaStore" [(ngModel)]="searchTerm" (input)="filter()" />
-        <button class="btn-search">🔍</button>
+
+      <!-- Nav Links -->
+      <nav class="sf-nav">
+        <a href="#" class="sf-nav-link sf-nav-link--active">Overview</a>
+        <a href="#" class="sf-nav-link">Reports</a>
+        <a href="#" class="sf-nav-link">Activity</a>
+      </nav>
+
+      <!-- Search -->
+      <div class="sf-search-wrap">
+        <svg class="sf-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input type="text" class="sf-search-input" placeholder="Search products..." [(ngModel)]="searchTerm" (input)="filter()" />
       </div>
-      <div class="nav-links">
-        <div class="nav-item"><span>Returns</span><strong>& Orders</strong></div>
-        <div class="nav-item cart"><span>🛒</span><strong>Cart</strong></div>
+
+      <!-- Header Actions -->
+      <div class="sf-header-actions">
+        <button class="sf-icon-btn sf-cart-btn" title="Cart" (click)="goToCart()">
+          <span class="sf-cart-badge" *ngIf="cartService.cartTotalCount() > 0">
+            {{ cartService.cartTotalCount() }}
+          </span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/>
+            <path d="M16 10a4 4 0 01-8 0"/>
+          </svg>
+        </button>
+        <button class="sf-icon-btn" title="Notifications">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>
+          </svg>
+        </button>
+
+        <!-- User Avatar + Dropdown -->
+        <div class="sf-user-menu" [class.sf-user-menu--open]="userMenuOpen">
+          <div class="sf-user-avatar" (click)="toggleUserMenu()">
+            {{ userName.charAt(0) }}
+          </div>
+
+          <!-- Dropdown Panel -->
+          <div class="sf-user-dropdown" *ngIf="userMenuOpen">
+            <!-- User Info Header -->
+            <div class="sf-dropdown-header">
+              <div class="sf-dropdown-avatar">{{ userName.charAt(0) }}</div>
+              <div>
+                <div class="sf-dropdown-name">{{ userName }}</div>
+                <div class="sf-dropdown-role">{{ userRole }}</div>
+              </div>
+            </div>
+
+            <div class="sf-dropdown-divider"></div>
+
+            <!-- Menu Items -->
+            <button class="sf-dropdown-item" (click)="closeUserMenu()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+              </svg>
+              Profile
+            </button>
+            <button class="sf-dropdown-item" (click)="closeUserMenu()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
+              </svg>
+              Settings
+            </button>
+
+            <div class="sf-dropdown-divider"></div>
+
+            <button class="sf-dropdown-item sf-dropdown-item--danger" (click)="logout()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+                <polyline points="16 17 21 12 16 7"/>
+                <line x1="21" y1="12" x2="9" y2="12"/>
+              </svg>
+              Sign out
+            </button>
+          </div>
+        </div>
+
+        <!-- Backdrop to close on outside click -->
+        <div class="sf-menu-backdrop" *ngIf="userMenuOpen" (click)="closeUserMenu()"></div>
       </div>
     </div>
-    <div class="nav-sub">
-      <ul>
-        <li><span class="menu-icon">☰</span> All</li>
-        <li>Today's Deals</li>
-        <li>Customer Service</li>
-        <li>Registry</li>
-        <li>Gift Cards</li>
-        <li>Sell</li>
-      </ul>
+
+    <!-- Sub navigation (category pills) -->
+    <div class="sf-subnav">
+      <div class="sf-subnav-inner">
+        <button class="sf-pill sf-pill--active">All</button>
+        <button class="sf-pill">Performance Edge</button>
+        <button class="sf-pill">Workspace Tools</button>
+        <button class="sf-pill">Wearable Tech</button>
+        <button class="sf-pill">Archive Series</button>
+      </div>
     </div>
   </header>
 
-  <section class="hero-carousel">
-    <div class="carousel-track" [style.transform]="'translateX(' + (-currentSlide * 100) + '%)'">
-      <div class="carousel-slide" *ngFor="let slide of carouselSlides" [style.background-color]="slide.bgColor">
-        <div class="slide-content">
-          <h2>{{ slide.title }}</h2>
-          <p>{{ slide.subtitle }}</p>
-          <button class="btn-shop">Shop Now</button>
-        </div>
+  <!-- ===== HERO BANNER ===== -->
+  <section class="sf-hero">
+    <div class="sf-hero-inner">
+      <div class="sf-hero-tag">OBSIDIAN FLUX EDITION</div>
+      <h1 class="sf-hero-headline">Precision-engineered<br><span class="sf-hero-accent">for the modern architect.</span></h1>
+      <p class="sf-hero-sub">Obsidian Flux Edition available now. Built for enterprise velocity.</p>
+      <div class="sf-hero-actions">
+        <button class="sf-btn-primary">Explore Collection</button>
+        <button class="sf-btn-ghost">View Catalog →</button>
       </div>
     </div>
-    <button class="carousel-btn prev" (click)="prevSlide()">❮</button>
-    <button class="carousel-btn next" (click)="nextSlide()">❯</button>
+    <!-- Decorative -->
+    <div class="sf-hero-glow sf-hero-glow--primary"></div>
+    <div class="sf-hero-glow sf-hero-glow--secondary"></div>
   </section>
 
-  <main class="store-content">
-    <div class="loading-state" *ngIf="loading">
-       <div class="spinner"></div> Loading Catalog...
-    </div>
-    <div class="error-state" *ngIf="!loading && error">⚠️ {{ error }}</div>
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="sf-main">
 
-    <div class="product-grid" *ngIf="!loading && !error">
-      <div class="product-card" *ngFor="let product of filteredProducts" [routerLink]="['/customer/product', product.id]">
-        <div class="card-badge" *ngIf="product.isBestseller">Best Seller</div>
-        <div class="product-image">
-          <div class="placeholder-img">{{ product.name.charAt(0) }}</div>
+    <!-- Loading -->
+    <div class="sf-loading" *ngIf="loading">
+      <div class="sf-spinner"></div>
+      <span>Loading catalog...</span>
+    </div>
+
+    <!-- Error -->
+    <div class="sf-error" *ngIf="!loading && error">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      {{ error }}
+    </div>
+
+    <!-- Product Grid -->
+    <div *ngIf="!loading && !error">
+      <!-- Section Header -->
+      <div class="sf-section-header">
+        <div>
+          <h2 class="sf-section-title">Featured Products</h2>
+          <p class="sf-section-sub">{{ filteredProducts.length }} items available</p>
         </div>
-        <div class="product-details">
-          <h3 class="product-title" [title]="product.name">{{ product.name }}</h3>
-          <div class="product-brand">{{ product.brand }}</div>
-          <div class="product-description">{{ product.description }}</div>
-          <div class="product-meta">
-            <span class="meta-sku">SKU: {{ product.sku }}</span>
-            <span class="meta-status" [ngClass]="product.publishStatus.toLowerCase()">{{ product.publishStatus }}</span>
-          </div>
-          <button class="btn-add-cart" (click)="addToCart($event, product)">Add to Cart</button>
+        <div class="sf-sort-row">
+          <span class="sf-sort-label">Sort by</span>
+          <select class="sf-sort-select">
+            <option>Newest</option>
+            <option>Price: Low to High</option>
+            <option>Price: High to Low</option>
+          </select>
         </div>
       </div>
-      
-      <div class="empty-state" *ngIf="filteredProducts.length === 0">
-        No products match your search. Try another term!
+
+      <!-- Empty State -->
+      <div class="sf-empty" *ngIf="filteredProducts.length === 0">
+        <div class="sf-empty-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </div>
+        <h3>No products found</h3>
+        <p>Try adjusting your search or browse all categories.</p>
+      </div>
+
+      <!-- Products -->
+      <div class="sf-product-grid" *ngIf="filteredProducts.length > 0">
+        <article class="sf-card"
+          *ngFor="let product of filteredProducts"
+          [routerLink]="['/customer/product', product.id]">
+
+          <!-- Product Image Area -->
+          <div class="sf-card-image">
+            <div class="sf-card-placeholder">{{ product.name.charAt(0) }}</div>
+            <div class="sf-card-badge" *ngIf="product.isBestseller">Best Seller</div>
+            <div class="sf-card-overlay">
+              <button class="sf-quick-view" [class.added]="addedProductIds.has(product.id)" (click)="addToCart($event, product)">
+                <ng-container *ngIf="!addedProductIds.has(product.id)">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/>
+                    <path d="M16 10a4 4 0 01-8 0"/>
+                  </svg>
+                  Add to Cart
+                </ng-container>
+                <ng-container *ngIf="addedProductIds.has(product.id)">
+                  Added!
+                </ng-container>
+              </button>
+            </div>
+          </div>
+
+          <!-- Product Info -->
+          <div class="sf-card-body">
+            <div class="sf-card-meta">
+              <span class="sf-card-brand">{{ product.brand }}</span>
+              <span class="sf-card-sku">{{ product.material }} • {{ product.color }}</span>
+            </div>
+            <h3 class="sf-card-name">{{ product.name }}</h3>
+            <p class="sf-card-price" style="color: var(--primary); font-weight: 700; margin: 4px 0 8px 0;">
+               {{ product.price | currency }}
+            </p>
+            <p class="sf-card-desc">{{ product.description }}</p>
+            
+            <div class="sf-card-perks" style="font-size: 0.75rem; color: var(--on-surface-variant); margin-bottom: 24px;">
+              <div>🛡️ {{ product.warrantyPeriod }}</div>
+              <div *ngIf="product.highlights" style="margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                ✨ {{ product.highlights }}
+              </div>
+            </div>
+
+            <div class="sf-card-footer">
+              <span class="sf-card-status" [ngClass]="'status-' + product.publishStatus.toLowerCase()">
+                {{ product.publishStatus }}
+              </span>
+              <button class="sf-btn-cart" [class.added]="addedProductIds.has(product.id)" (click)="addToCart($event, product)">
+                <ng-container *ngIf="!addedProductIds.has(product.id)">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                  </svg>
+                  Add
+                </ng-container>
+                <ng-container *ngIf="addedProductIds.has(product.id)">
+                  Added
+                </ng-container>
+              </button>
+            </div>
+          </div>
+        </article>
       </div>
     </div>
+
+    <!-- ===== INFO STRIPS ===== -->
+    <div class="sf-perks" *ngIf="!loading && !error">
+      <div class="sf-perk">
+        <div class="sf-perk-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+            <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+          </svg>
+        </div>
+        <div>
+          <h4>Express Logistics</h4>
+          <p>Next-day global delivery for Tier 1 items.</p>
+        </div>
+      </div>
+      <div class="sf-perk">
+        <div class="sf-perk-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <div>
+          <h4>Member Exclusives</h4>
+          <p>Early access and obsidian-tier pricing.</p>
+        </div>
+      </div>
+      <div class="sf-perk">
+        <div class="sf-perk-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+          </svg>
+        </div>
+        <div>
+          <h4>24/7 Support</h4>
+          <p>Enterprise-grade support for every tier.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== NEWSLETTER ===== -->
+    <section class="sf-newsletter" *ngIf="!loading && !error">
+      <div class="sf-newsletter-inner">
+        <div class="sf-newsletter-text">
+          <h2>Stay in the loop</h2>
+          <p>Subscribe for curated monthly reports on enterprise design trends and exclusive product drops from the Obsidian lab.</p>
+        </div>
+        <div class="sf-newsletter-form">
+          <input type="email" placeholder="Enter your email" class="sf-newsletter-input" />
+          <button class="sf-btn-primary">Subscribe</button>
+        </div>
+      </div>
+    </section>
+
   </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="sf-footer">
+    <div class="sf-footer-inner">
+      <div class="sf-footer-brand">
+        <div class="sf-logo">
+          <div class="sf-logo-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="white"/>
+            </svg>
+          </div>
+          <span class="sf-logo-text">Obsidian</span>
+        </div>
+        <p class="sf-footer-tagline">Defining the digital frontier through premium enterprise commerce.</p>
+      </div>
+      <div class="sf-footer-links">
+        <div class="sf-footer-col">
+          <h5>Catalog</h5>
+          <a href="#">Performance Edge</a>
+          <a href="#">Workspace Tools</a>
+          <a href="#">Wearable Tech</a>
+          <a href="#">Archive Series</a>
+        </div>
+        <div class="sf-footer-col">
+          <h5>Company</h5>
+          <a href="#">Our Ethos</a>
+          <a href="#">Sourcing</a>
+          <a href="#">Press Inquiries</a>
+          <a href="#">Careers</a>
+        </div>
+        <div class="sf-footer-col">
+          <h5>Legal</h5>
+          <a href="#">Terms of Service</a>
+          <a href="#">Privacy Policy</a>
+          <a href="#">Shipping &amp; Returns</a>
+        </div>
+      </div>
+    </div>
+    <div class="sf-footer-bottom">
+      <span>© 2026 Obsidian Enterprise. All rights reserved.</span>
+      <span>Built on the Digital Obsidian design system.</span>
+    </div>
+  </footer>
+
 </div>

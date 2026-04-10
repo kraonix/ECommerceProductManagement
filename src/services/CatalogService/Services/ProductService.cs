@@ -27,7 +27,11 @@ namespace CatalogService.Services
             {
                 ProductId = p.ProductId, CategoryId = p.CategoryId,
                 SKU = p.SKU, Name = p.Name, Brand = p.Brand, 
-                Description = p.Description, PublishStatus = p.PublishStatus
+                Description = p.Description, PublishStatus = p.PublishStatus,
+                Price = p.Price, StockQuantity = p.StockQuantity, WeightKg = p.WeightKg,
+                DimensionsCm = p.DimensionsCm, Material = p.Material, Color = p.Color,
+                WarrantyPeriod = p.WarrantyPeriod, Manufacturer = p.Manufacturer,
+                Highlights = p.Highlights, HardwareInterface = p.HardwareInterface
             }).ToListAsync();
         }
 
@@ -35,7 +39,10 @@ namespace CatalogService.Services
         {
             var p = await _db.Products.FindAsync(id);
             if (p == null) return null;
-            return new ProductResponseDto { ProductId = p.ProductId, CategoryId = p.CategoryId, SKU = p.SKU, Name = p.Name, Brand = p.Brand, Description = p.Description, PublishStatus = p.PublishStatus };
+            return new ProductResponseDto { 
+                ProductId = p.ProductId, CategoryId = p.CategoryId, SKU = p.SKU, Name = p.Name, Brand = p.Brand, Description = p.Description, PublishStatus = p.PublishStatus,
+                Price = p.Price, StockQuantity = p.StockQuantity, WeightKg = p.WeightKg, DimensionsCm = p.DimensionsCm, Material = p.Material, Color = p.Color, WarrantyPeriod = p.WarrantyPeriod, Manufacturer = p.Manufacturer, Highlights = p.Highlights, HardwareInterface = p.HardwareInterface
+            };
         }
 
         public async Task<ProductResponseDto> CreateProductAsync(ProductCreateDto dto)
@@ -47,13 +54,17 @@ namespace CatalogService.Services
             {
                 CategoryId = dto.CategoryId, SKU = dto.SKU,
                 Name = dto.Name, Brand = dto.Brand, Description = dto.Description,
-                PublishStatus = "Draft" // Matches TC04 expectation
+                PublishStatus = "Draft", // Matches TC04 expectation
+                Price = dto.Price, StockQuantity = dto.StockQuantity, WeightKg = dto.WeightKg, DimensionsCm = dto.DimensionsCm, Material = dto.Material, Color = dto.Color, WarrantyPeriod = dto.WarrantyPeriod, Manufacturer = dto.Manufacturer, Highlights = dto.Highlights, HardwareInterface = dto.HardwareInterface
             };
 
             _db.Products.Add(product);
             await _db.SaveChangesAsync();
 
-            return new ProductResponseDto { ProductId = product.ProductId, CategoryId = product.CategoryId, SKU = product.SKU, Name = product.Name, Brand = product.Brand, Description = product.Description, PublishStatus = product.PublishStatus };
+            return new ProductResponseDto { 
+                ProductId = product.ProductId, CategoryId = product.CategoryId, SKU = product.SKU, Name = product.Name, Brand = product.Brand, Description = product.Description, PublishStatus = product.PublishStatus,
+                Price = product.Price, StockQuantity = product.StockQuantity, WeightKg = product.WeightKg, DimensionsCm = product.DimensionsCm, Material = product.Material, Color = product.Color, WarrantyPeriod = product.WarrantyPeriod, Manufacturer = product.Manufacturer, Highlights = product.Highlights, HardwareInterface = product.HardwareInterface
+            };
         }
 
         public async Task<bool> UpdateProductAsync(int id, ProductUpdateDto dto)
@@ -70,6 +81,16 @@ namespace CatalogService.Services
             product.Name = dto.Name;
             product.Brand = dto.Brand;
             product.Description = dto.Description;
+            product.Price = dto.Price;
+            product.StockQuantity = dto.StockQuantity;
+            product.WeightKg = dto.WeightKg;
+            product.DimensionsCm = dto.DimensionsCm;
+            product.Material = dto.Material;
+            product.Color = dto.Color;
+            product.WarrantyPeriod = dto.WarrantyPeriod;
+            product.Manufacturer = dto.Manufacturer;
+            product.Highlights = dto.Highlights;
+            product.HardwareInterface = dto.HardwareInterface;
 
             await _db.SaveChangesAsync();
             return true;

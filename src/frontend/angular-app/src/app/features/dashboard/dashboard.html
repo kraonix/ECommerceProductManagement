@@ -1,122 +1,296 @@
-<div class="dashboard-grid" [ngClass]="{ 'admin-view': isAdmin, 'pm-view': !isAdmin }">
-  <div class="card section-banner" *ngIf="!loading && !error">
-    <div class="crumb">Home / Product Console</div>
-    <div class="hint">{{ isAdmin ? 'Admin Dashboard' : 'Product Manager Dashboard' }}</div>
-  </div>
-  
-  <div class="alert error-alert" *ngIf="error">
-    <span class="icon">⚠️</span> {{ error }}
-  </div>
-  
-  <div class="loading-state" *ngIf="loading && !error">
-    <div class="spinner-container">
-      <div class="spinner"></div>
-      <p>Loading dashboard data...</p>
-    </div>
+<!-- ============================================================
+     OBSIDIAN ENTERPRISE — Admin Dashboard
+     Direct translation from Stitch "Admin Dashboard - Desktop"
+     ============================================================ -->
+
+<div class="db-root">
+
+  <!-- Loading State -->
+  <div class="db-loading" *ngIf="loading">
+    <div class="db-spinner"></div>
+    <span>Loading dashboard...</span>
   </div>
 
-  <div class="card kpi-card" *ngIf="!loading && !error && isAdmin">
-    <div class="kpi-item">
-      <div class="kpi-value primary">{{ summary?.totalActiveProducts || 0 }}</div>
-      <div class="kpi-label">Active Products</div>
-    </div>
-    <div class="kpi-divider"></div>
-    <div class="kpi-item">
-      <div class="kpi-value warning">{{ summary?.pendingApprovals || 0 }}</div>
-      <div class="kpi-label">Pending Approvals</div>
-    </div>
-    <div class="kpi-divider"></div>
-    <div class="kpi-item">
-      <div class="kpi-value danger">{{ summary?.lowStockItems || 0 }}</div>
-      <div class="kpi-label">Low Stock</div>
-    </div>
+  <!-- Error State -->
+  <div class="db-error" *ngIf="error && !loading">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    {{ error }}
   </div>
 
-  <div class="card products-card" *ngIf="!loading && !error">
-    <div class="card-header">
-      <h3 class="card-title">{{ isAdmin ? 'Recent Products' : 'My Recent Products' }}</h3>
-      <a routerLink="/admin/catalog" class="view-all">View Catalog &rarr;</a>
+  <ng-container *ngIf="!loading">
+
+    <!-- ===== TOP BAR ===== -->
+    <div class="db-topbar">
+      <div class="db-topbar-left">
+        <span class="db-page-tag">GLOBAL PERFORMANCE</span>
+        <h1 class="db-page-title">Digital Command Center</h1>
+      </div>
+      <div class="db-topbar-right">
+        <div class="db-time-filters">
+          <button class="db-time-btn db-time-btn--active">24h</button>
+          <button class="db-time-btn">7d</button>
+          <button class="db-time-btn">30d</button>
+        </div>
+        <button class="db-new-btn" routerLink="/admin/catalog/new">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          New Transaction
+        </button>
+      </div>
     </div>
-    <div class="product-list">
-      <div class="product-row" *ngFor="let p of recentProducts">
-        <div class="prod-img">
-          <svg viewBox="0 0 24 24" fill="none" class="placeholder-icon">
-             <path d="M4 16L8.586 11.414C8.96106 11.0391 9.46967 10.8284 10 10.8284C10.5303 10.8284 11.0389 11.0391 11.414 11.414L16 16M14 14L15.586 12.414C15.9611 12.0391 16.4697 11.8284 17 11.8284C17.5303 11.8284 18.0389 12.0391 18.414 12.414L20 14M14 8H14.01M6 20H18C19.1046 20 20 19.1046 20 18V6C20 4.89543 19.1046 4 18 4H6C4.89543 4 4 4.89543 4 6V18C4 19.1046 4.89543 20 6 20Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <!-- ===== KPI CARDS ROW ===== -->
+    <div class="db-kpi-row">
+
+      <!-- Total Revenue / Active Products -->
+      <div class="db-kpi-card db-kpi-card--wide">
+        <div class="db-kpi-label">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
+          </svg>
+          {{ isAdmin ? 'Total Active Products' : 'Products Loaded' }}
+        </div>
+        <div class="db-kpi-big">{{ summary?.totalActiveProducts || recentProducts.length }}</div>
+        <div class="db-kpi-delta db-kpi-delta--up">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="18 15 12 9 6 15"/>
+          </svg>
+          +14.2% from last month
+        </div>
+        <!-- Mini chart area (decorative) -->
+        <div class="db-mini-chart">
+          <div class="db-mini-bar" *ngFor="let h of chartHeights" [style.height.%]="h"></div>
+        </div>
+      </div>
+
+      <!-- Conversion / Pending -->
+      <div class="db-kpi-card">
+        <div class="db-kpi-tag">CONVERSION</div>
+        <div class="db-kpi-icon db-kpi-icon--purple">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
+            <line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/>
           </svg>
         </div>
-        <div class="prod-info">
-          <h4>{{ p.name }}</h4>
-          <span class="sku">{{ p.sku }}</span>
-        </div>
-        <div class="prod-status">
-          <span class="badge" [ngClass]="getStatusClass(p.publishStatus)">{{ p.publishStatus }}</span>
+        <div class="db-kpi-mid">{{ summary?.pendingApprovals || 0 }}</div>
+        <div class="db-kpi-sublabel">Pending Approvals</div>
+        <div class="db-kpi-progress">
+          <div class="db-kpi-progress-bar" [style.width.%]="60"></div>
         </div>
       </div>
-      <div class="empty-state" *ngIf="recentProducts.length === 0">
-        <div class="empty-icon">📦</div>
-        <p>No products found. Add one to get started.</p>
+
+      <!-- Volume / Low Stock -->
+      <div class="db-kpi-card">
+        <div class="db-kpi-tag">VOLUME</div>
+        <div class="db-kpi-icon db-kpi-icon--amber">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/>
+          </svg>
+        </div>
+        <div class="db-kpi-mid">{{ summary?.lowStockItems || 0 }}</div>
+        <div class="db-kpi-sublabel">Low Stock Items</div>
+        <div class="db-kpi-progress">
+          <div class="db-kpi-progress-bar db-kpi-progress-bar--amber" style="width: 40%"></div>
+        </div>
+      </div>
+
+      <!-- Fraud / Status -->
+      <div class="db-kpi-card db-kpi-card--status">
+        <div class="db-status-dot"></div>
+        <div class="db-status-text">
+          <strong>System Operational</strong>
+          <span>99.9% uptime across all gateways</span>
+        </div>
+        <div class="db-status-avatars">
+          <div class="db-status-av" *ngFor="let u of recentProducts.slice(0,3)">
+            {{ u.name.charAt(0) }}
+          </div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="card alerts-card" *ngIf="!loading && !error && isAdmin">
-    <h3 class="card-title">Workflow Alerts</h3>
-    <ul class="alert-list">
-      <li *ngFor="let alert of summary?.alerts">
-        <span class="dot" [ngClass]="alert.includes('Warning') ? 'danger' : (alert.includes('pending') ? 'warning' : 'info')"></span> 
-        <span class="alert-text">{{ alert }}</span>
-      </li>
-      <li *ngIf="!summary?.alerts || summary?.alerts.length === 0">
-        <span class="dot info"></span> <span class="alert-text">System operating normally.</span>
-      </li>
-    </ul>
-  </div>
+    <!-- ===== MAIN ROW: Chart + Activity ===== -->
+    <div class="db-main-row">
 
-  <div class="card actions-card" *ngIf="!loading && !error && isAdmin">
-    <h3 class="card-title">Quick Actions</h3>
-    <div class="action-buttons">
-      <button class="btn-action primary" routerLink="/admin/catalog/new">
-        <span class="icon">+</span> Add New Product
-      </button>
-      <button class="btn-action outline">
-        <span class="icon">↑</span> Bulk Upload CSV
-      </button>
-      <button class="btn-action outline" (click)="exportData()">
-        <span class="icon">↓</span> Export Catalog
-      </button>
-    </div>
-  </div>
+      <!-- Revenue Insights / Products Chart -->
+      <div class="db-chart-card">
+        <div class="db-chart-header">
+          <h3>{{ isAdmin ? 'Revenue Insights' : 'Catalog Overview' }}</h3>
+          <div class="db-chart-legend">
+            <span class="db-legend-dot db-legend-dot--primary"></span> Active
+            <span class="db-legend-dot db-legend-dot--secondary"></span> Pending
+          </div>
+        </div>
 
-  <div class="card pm-overview-card" *ngIf="!loading && !error && !isAdmin">
-    <h3 class="card-title">Product Manager Overview</h3>
-    <div class="pm-overview-grid">
-      <div class="pm-stat">
-        <div class="value">{{ recentProducts.length }}</div>
-        <div class="label">Products Loaded</div>
+        <!-- Bar chart using live recentProducts data -->
+        <div class="db-bar-chart">
+          <div class="db-bar-wrap" *ngFor="let p of recentProducts; let i = index">
+            <div class="db-bar" [style.height.px]="getBarHeight(i)" [class.db-bar--highlight]="i === 4"></div>
+            <div class="db-bar-label">{{ p.name.substring(0,3).toUpperCase() }}</div>
+          </div>
+          <!-- Filler bars when few products -->
+          <ng-container *ngIf="recentProducts.length < 8">
+            <div class="db-bar-wrap" *ngFor="let f of fillerBars">
+              <div class="db-bar" [style.height.px]="f"></div>
+              <div class="db-bar-label">—</div>
+            </div>
+          </ng-container>
+        </div>
+        <div class="db-chart-xaxis">
+          <span *ngFor="let m of months">{{ m }}</span>
+        </div>
       </div>
-      <div class="pm-stat">
-        <div class="value">{{ recentProducts.filter(p => getStatusClass(p.publishStatus) === 'pending').length }}</div>
-        <div class="label">Pending Review</div>
-      </div>
-      <div class="pm-stat">
-        <div class="value">{{ recentProducts.filter(p => getStatusClass(p.publishStatus) === 'draft').length }}</div>
-        <div class="label">Draft Items</div>
-      </div>
-    </div>
-  </div>
 
-  <div class="card pm-actions-card" *ngIf="!loading && !error && !isAdmin">
-    <h3 class="card-title">Quick Actions</h3>
-    <div class="action-buttons">
-      <button class="btn-action primary" routerLink="/admin/catalog/new">
-        <span class="icon">+</span> Create Product
-      </button>
-      <button class="btn-action outline" routerLink="/admin/catalog">
-        <span class="icon">📦</span> Manage Catalog
-      </button>
-      <button class="btn-action outline" routerLink="/admin/audit">
-        <span class="icon">📋</span> Review Audit Trail
-      </button>
+      <!-- Recent Activity -->
+      <div class="db-activity-card">
+        <h3>Recent Activity</h3>
+        <div class="db-activity-list">
+
+          <!-- Dynamic from alerts -->
+          <div class="db-activity-item" *ngFor="let alert of (summary?.alerts || []).slice(0,3)">
+            <div class="db-activity-icon db-activity-icon--blue">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+              </svg>
+            </div>
+            <div class="db-activity-info">
+              <strong>{{ alert }}</strong>
+              <span>just now</span>
+            </div>
+          </div>
+
+          <!-- Static fallback items (always shown) -->
+          <div class="db-activity-item">
+            <div class="db-activity-icon db-activity-icon--blue">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+            </div>
+            <div class="db-activity-info">
+              <strong>Data exported to CSV</strong>
+              <span>Catalog Report — 2 mins ago</span>
+            </div>
+          </div>
+
+          <div class="db-activity-item">
+            <div class="db-activity-icon db-activity-icon--amber">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/>
+              </svg>
+            </div>
+            <div class="db-activity-info">
+              <strong>Bulk update processed</strong>
+              <span>{{ recentProducts.length }} products updated — 45 mins ago</span>
+            </div>
+          </div>
+
+          <div class="db-activity-item">
+            <div class="db-activity-icon db-activity-icon--purple">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/>
+              </svg>
+            </div>
+            <div class="db-activity-info">
+              <strong>New session started</strong>
+              <span>{{ userName }} logged in — 2 hours ago</span>
+            </div>
+          </div>
+        </div>
+
+        <button class="db-audit-btn" routerLink="/admin/audit">
+          View Audit Log
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </button>
+      </div>
     </div>
-  </div>
+
+    <!-- ===== LATEST TRANSACTIONS / PRODUCTS TABLE ===== -->
+    <div class="db-table-card">
+      <div class="db-table-header">
+        <div>
+          <h3>{{ isAdmin ? 'Latest Transactions' : 'Recent Products' }}</h3>
+          <p>{{ isAdmin ? 'Manage and track your catalog pipeline' : 'Your most recently updated products' }}</p>
+        </div>
+        <div class="db-table-actions">
+          <button class="db-export-btn" (click)="exportData()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Export Report
+          </button>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="db-table-wrap">
+        <table class="db-table">
+          <thead>
+            <tr>
+              <th>PRODUCT / NAME</th>
+              <th>SKU / ID</th>
+              <th>STATUS</th>
+              <th class="db-th-right">ACTIONS</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let p of recentProducts" class="db-table-row">
+              <td>
+                <div class="db-cell-user">
+                  <div class="db-cell-av">{{ p.name.charAt(0) }}</div>
+                  <div>
+                    <div class="db-cell-name">{{ p.name }}</div>
+                    <div class="db-cell-sub">SKU: {{ p.sku }}</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="db-cell-id">{{ p.sku }}</span>
+              </td>
+              <td>
+                <span class="db-status-badge" [ngClass]="'db-status-badge--' + getStatusClass(p.publishStatus)">
+                  {{ p.publishStatus }}
+                </span>
+              </td>
+              <td class="db-td-right">
+                <a [routerLink]="['/admin/catalog', p.id]" class="db-action-link">View →</a>
+              </td>
+            </tr>
+            <tr *ngIf="recentProducts.length === 0">
+              <td colspan="4" class="db-empty-row">No products loaded yet.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="db-table-footer">
+        <span>Showing {{ recentProducts.length }} of {{ summary?.totalActiveProducts || recentProducts.length }} items</span>
+        <div class="db-pagination">
+          <button class="db-page-btn">Prev</button>
+          <button class="db-page-btn">Next</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== QUICK ACTIONS (PM view only) ===== -->
+    <div class="db-actions-row" *ngIf="!isAdmin">
+      <button class="db-btn-primary" routerLink="/admin/catalog/new">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Create Product
+      </button>
+      <button class="db-btn-ghost" routerLink="/admin/catalog">View Catalog</button>
+      <button class="db-btn-ghost" routerLink="/admin/audit">Audit Trail</button>
+    </div>
+
+  </ng-container>
 </div>

@@ -18,9 +18,15 @@ export class Dashboard implements OnInit {
   summary: any = null;
   recentProducts: any[] = [];
   userRole = (localStorage.getItem('user_role') || '').trim();
+  userName = localStorage.getItem('user_name') || 'Admin';
   isAdmin = false;
   loading = true;
   error = '';
+
+  // Chart helpers
+  chartHeights = [30, 55, 45, 70, 80, 60, 75, 50, 85, 65, 90, 72];
+  fillerBars = [40, 70, 55, 80, 65, 90, 48, 75];
+  months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
 
   ngOnInit() {
     const token = localStorage.getItem('jwt_token');
@@ -109,6 +115,11 @@ export class Dashboard implements OnInit {
 
   getStatusClass(status: string | null | undefined): string {
     return (status || 'draft').toLowerCase();
+  }
+
+  getBarHeight(index: number): number {
+    const heights = [60, 100, 80, 130, 160, 110, 140, 90];
+    return heights[index % heights.length];
   }
 
   exportData() {

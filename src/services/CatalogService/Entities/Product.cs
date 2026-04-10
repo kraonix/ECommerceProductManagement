@@ -23,6 +23,32 @@ namespace CatalogService.Entities
         [Required, MaxLength(50)] 
         public string PublishStatus { get; set; } = "Draft";
 
+        // New Realism Data Fields
+        public decimal Price { get; set; } = 99.99m;
+        public int StockQuantity { get; set; } = 0;
+        public decimal WeightKg { get; set; } = 0.0m;
+        
+        [MaxLength(50)]
+        public string DimensionsCm { get; set; } = string.Empty;
+        
+        [MaxLength(100)]
+        public string Material { get; set; } = string.Empty;
+        
+        [MaxLength(50)]
+        public string Color { get; set; } = string.Empty;
+        
+        [MaxLength(50)]
+        public string WarrantyPeriod { get; set; } = string.Empty;
+        
+        [MaxLength(100)]
+        public string Manufacturer { get; set; } = string.Empty;
+        
+        [MaxLength(500)]
+        public string Highlights { get; set; } = string.Empty;
+        
+        [MaxLength(100)]
+        public string HardwareInterface { get; set; } = string.Empty;
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public Category Category { get; set; } = null!;

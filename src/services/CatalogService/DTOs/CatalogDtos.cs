@@ -15,6 +15,17 @@ namespace CatalogService.DTOs
         public string Brand { get; set; } = string.Empty;
 
         public string Description { get; set; } = string.Empty;
+
+        public decimal Price { get; set; } = 99.99m;
+        public int StockQuantity { get; set; } = 0;
+        public decimal WeightKg { get; set; } = 0.0m;
+        public string DimensionsCm { get; set; } = string.Empty;
+        public string Material { get; set; } = string.Empty;
+        public string Color { get; set; } = string.Empty;
+        public string WarrantyPeriod { get; set; } = string.Empty;
+        public string Manufacturer { get; set; } = string.Empty;
+        public string Highlights { get; set; } = string.Empty;
+        public string HardwareInterface { get; set; } = string.Empty;
     }
 
     public class ProductUpdateDto : ProductCreateDto { }
@@ -28,6 +39,17 @@ namespace CatalogService.DTOs
         public string Brand { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public string PublishStatus { get; set; } = string.Empty;
+        
+        public decimal Price { get; set; }
+        public int StockQuantity { get; set; }
+        public decimal WeightKg { get; set; }
+        public string DimensionsCm { get; set; } = string.Empty;
+        public string Material { get; set; } = string.Empty;
+        public string Color { get; set; } = string.Empty;
+        public string WarrantyPeriod { get; set; } = string.Empty;
+        public string Manufacturer { get; set; } = string.Empty;
+        public string Highlights { get; set; } = string.Empty;
+        public string HardwareInterface { get; set; } = string.Empty;
     }
 
     public class MediaUploadDto

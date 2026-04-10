@@ -60,6 +60,7 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<CatalogDbContext>();
     db.Database.Migrate();
+    CatalogService.Data.CatalogDbContextSeed.SeedAsync(db).Wait();
 }
 
 app.Run();
