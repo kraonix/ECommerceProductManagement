@@ -23,6 +23,7 @@ export class Login {
   currentMode: AuthMode = AuthMode.LOGIN;
 
   isLoading = false;
+  showPassword = false;
   errorMessage = '';
   successMessage = '';
 

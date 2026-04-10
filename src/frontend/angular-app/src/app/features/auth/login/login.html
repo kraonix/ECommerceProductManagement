@@ -1,59 +1,159 @@
-<div class="auth-workspace">
-  <!-- 3D Background Decorative Shapes -->
-  <div class="shape ring-1"></div>
-  <div class="shape ring-2"></div>
-  <div class="shape blob-1"></div>
-  <div class="shape blob-2"></div>
-  <div class="shape wave-1"></div>
+<div class="auth-root">
 
-  <div class="glass-backdrop">
-    <div class="glass-card">
-      
-      <div class="auth-header">
-        <div class="logo">Product Console</div>
-        <h2 *ngIf="currentMode === AuthMode.LOGIN">Login</h2>
-        <h2 *ngIf="currentMode === AuthMode.SIGNUP">Register</h2>
-        <h2 *ngIf="currentMode === AuthMode.FORGOT_PASSWORD">Recovery</h2>
-        <h2 *ngIf="currentMode === AuthMode.RESET_PASSWORD">Reset</h2>
+  <!-- ===== LEFT PANEL: Marketing ===== -->
+  <div class="auth-left">
+    <!-- Logo -->
+    <div class="brand-logo">
+      <div class="brand-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="white" opacity="0.9"/>
+        </svg>
+      </div>
+      <span class="brand-name">Obsidian</span>
+    </div>
+
+    <!-- Hero Text -->
+    <div class="hero-text">
+      <h1>Forge your digital<br><span class="hero-accent">infrastructure.</span></h1>
+      <p class="hero-sub">Access the world's most advanced enterprise e-commerce engine. Secure, scalable, and designed for high-velocity growth.</p>
+    </div>
+
+    <!-- Feature List -->
+    <div class="feature-list">
+      <div class="feature-item">
+        <div class="feature-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <div class="feature-info">
+          <h4>Military-grade Security</h4>
+          <p>Multi-layered encryption and biometric passkey support.</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+        </div>
+        <div class="feature-info">
+          <h4>Instant Provisioning</h4>
+          <p>Deploy your entire storefront stack in under 60 seconds.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Trust Indicator -->
+    <div class="trust-row">
+      <div class="trust-avatars">
+        <div class="trust-avatar">J</div>
+        <div class="trust-avatar">M</div>
+        <div class="trust-avatar">K</div>
+      </div>
+      <span class="trust-text">Trusted by <strong>2,500+</strong> global enterprises</span>
+    </div>
+  </div>
+
+  <!-- ===== RIGHT PANEL: Auth Form ===== -->
+  <div class="auth-right">
+    <div class="auth-card">
+
+      <!-- Dynamic Header per Mode -->
+      <ng-container *ngIf="currentMode === AuthMode.LOGIN">
+        <div class="form-header">
+          <h2>Welcome back</h2>
+          <p>Enter your credentials to access your dashboard.</p>
+        </div>
+      </ng-container>
+      <ng-container *ngIf="currentMode === AuthMode.SIGNUP">
+        <div class="form-header">
+          <h2>Create account</h2>
+          <p>Register to manage your enterprise storefront.</p>
+        </div>
+      </ng-container>
+      <ng-container *ngIf="currentMode === AuthMode.FORGOT_PASSWORD">
+        <div class="form-header">
+          <h2>Recover access</h2>
+          <p>Enter your email to receive a recovery token.</p>
+        </div>
+      </ng-container>
+      <ng-container *ngIf="currentMode === AuthMode.RESET_PASSWORD">
+        <div class="form-header">
+          <h2>Reset password</h2>
+          <p>Enter your token and choose a new password.</p>
+        </div>
+      </ng-container>
+
+      <!-- Alerts -->
+      <div class="auth-alert error" *ngIf="errorMessage">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        {{ errorMessage }}
+      </div>
+      <div class="auth-alert success" *ngIf="successMessage">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        {{ successMessage }}
       </div>
 
-      <div class="alert error" *ngIf="errorMessage">{{ errorMessage }}</div>
-      <div class="alert success" *ngIf="successMessage">{{ successMessage }}</div>
+      <form #authForm="ngForm" (ngSubmit)="onSubmit(authForm)">
 
-      <form #authForm="ngForm" (ngSubmit)="onSubmit(authForm)" class="auth-form">
-
-        <!-- LOGIN -->
+        <!-- LOGIN FIELDS -->
         <ng-container *ngIf="currentMode === AuthMode.LOGIN">
-          <div class="form-group">
-            <label>Email</label>
-            <input type="email" name="email" [(ngModel)]="loginData.email" required class="glass-input" placeholder="user@example.com" />
+          <div class="field-group">
+            <input
+              type="email"
+              name="email"
+              [(ngModel)]="loginData.email"
+              required
+              class="obsidian-field"
+              placeholder="Email address"
+              id="login-email" />
           </div>
-          <div class="form-group">
-            <label>Password</label>
-            <input type="password" name="password" [(ngModel)]="loginData.password" required class="glass-input" placeholder="••••••••" />
+          <div class="field-group password-field-wrap">
+            <input
+              [type]="showPassword ? 'text' : 'password'"
+              name="password"
+              [(ngModel)]="loginData.password"
+              required
+              class="obsidian-field"
+              placeholder="Password"
+              id="login-password" />
+            <button type="button" class="toggle-pw" (click)="showPassword = !showPassword">
+              <svg *ngIf="!showPassword" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+              </svg>
+              <svg *ngIf="showPassword" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                <line x1="1" y1="1" x2="23" y2="23"/>
+              </svg>
+            </button>
           </div>
-          <div class="forgot-row">
-            <a href="javascript:void(0)" (click)="setMode(AuthMode.FORGOT_PASSWORD, authForm)">Forgot Password?</a>
+          <div class="meta-row">
+            <label class="remember-label">
+              <input type="checkbox" class="remember-check"> Remember device
+            </label>
+            <a href="javascript:void(0)" class="forgot-link" (click)="setMode(AuthMode.FORGOT_PASSWORD, authForm)">Forgot password?</a>
           </div>
         </ng-container>
 
-        <!-- SIGNUP -->
+        <!-- SIGNUP FIELDS -->
         <ng-container *ngIf="currentMode === AuthMode.SIGNUP">
-          <div class="form-group">
-            <label>Full Name</label>
-            <input type="text" name="fullName" [(ngModel)]="signupData.fullName" required class="glass-input" placeholder="John Doe" />
+          <div class="field-group">
+            <input type="text" name="fullName" [(ngModel)]="signupData.fullName" required class="obsidian-field" placeholder="Full Name" />
           </div>
-          <div class="form-group">
-            <label>Email</label>
-            <input type="email" name="email" [(ngModel)]="signupData.email" required class="glass-input" placeholder="user@example.com" />
+          <div class="field-group">
+            <input type="email" name="email" [(ngModel)]="signupData.email" required class="obsidian-field" placeholder="Email address" />
           </div>
-          <div class="form-group">
-            <label>Password</label>
-            <input type="password" name="password" [(ngModel)]="signupData.password" required class="glass-input" placeholder="••••••••" />
+          <div class="field-group password-field-wrap">
+            <input [type]="showPassword ? 'text' : 'password'" name="password" [(ngModel)]="signupData.password" required class="obsidian-field" placeholder="Password" />
+            <button type="button" class="toggle-pw" (click)="showPassword = !showPassword">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
           </div>
-          <div class="form-group">
-            <label>Role</label>
-            <select name="role" [(ngModel)]="signupData.role" required class="glass-input">
+          <div class="field-group">
+            <select name="role" [(ngModel)]="signupData.role" required class="obsidian-field">
               <option value="Admin">System Administrator</option>
               <option value="ProductManager">Product Manager</option>
               <option value="ContentExecutive">Content Executive</option>
@@ -62,47 +162,62 @@
           </div>
         </ng-container>
 
-        <!-- FORGOT PASSWORD -->
+        <!-- FORGOT PASSWORD FIELDS -->
         <ng-container *ngIf="currentMode === AuthMode.FORGOT_PASSWORD">
-          <div class="form-group">
-            <label>Account Email</label>
-            <input type="email" name="forgotEmail" [(ngModel)]="forgotData.email" required class="glass-input" placeholder="user@example.com" />
+          <div class="field-group">
+            <input type="email" name="forgotEmail" [(ngModel)]="forgotData.email" required class="obsidian-field" placeholder="Account email" />
           </div>
         </ng-container>
 
-        <!-- RESET PASSWORD -->
+        <!-- RESET PASSWORD FIELDS -->
         <ng-container *ngIf="currentMode === AuthMode.RESET_PASSWORD">
-          <div class="form-group">
-            <label>Validation Token</label>
-            <input type="text" name="resetToken" [(ngModel)]="resetData.token" required class="glass-input mono" placeholder="Paste token here" />
+          <div class="field-group">
+            <input type="text" name="resetToken" [(ngModel)]="resetData.token" required class="obsidian-field mono" placeholder="Paste recovery token" />
           </div>
-          <div class="form-group">
-            <label>New Password</label>
-            <input type="password" name="newPassword" [(ngModel)]="resetData.newPassword" required class="glass-input" placeholder="••••••••" />
+          <div class="field-group password-field-wrap">
+            <input [type]="showPassword ? 'text' : 'password'" name="newPassword" [(ngModel)]="resetData.newPassword" required class="obsidian-field" placeholder="New password" />
+            <button type="button" class="toggle-pw" (click)="showPassword = !showPassword">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
           </div>
         </ng-container>
 
-        <!-- Submit Button -->
-        <button type="submit" class="btn-glass" [disabled]="isLoading || authForm.invalid">
-          <span class="spinner" *ngIf="isLoading"></span>
+        <!-- Primary CTA Button -->
+        <button type="submit" class="btn-primary-cta" [disabled]="isLoading || authForm.invalid">
+          <span class="btn-spinner" *ngIf="isLoading"></span>
           <ng-container *ngIf="!isLoading">
-            {{ currentMode === AuthMode.LOGIN ? 'Sign in' : '' }}
-            {{ currentMode === AuthMode.SIGNUP ? 'Register' : '' }}
-            {{ currentMode === AuthMode.FORGOT_PASSWORD ? 'Send Token' : '' }}
-            {{ currentMode === AuthMode.RESET_PASSWORD ? 'Confirm Reset' : '' }}
+            <span *ngIf="currentMode === AuthMode.LOGIN">Sign in &nbsp;→</span>
+            <span *ngIf="currentMode === AuthMode.SIGNUP">Create account &nbsp;→</span>
+            <span *ngIf="currentMode === AuthMode.FORGOT_PASSWORD">Send recovery token &nbsp;→</span>
+            <span *ngIf="currentMode === AuthMode.RESET_PASSWORD">Confirm reset &nbsp;→</span>
           </ng-container>
         </button>
 
-        <!-- Footer Toggles -->
-        <div class="auth-footer">
+
+
+        <!-- Footer toggle -->
+        <div class="form-footer">
           <ng-container *ngIf="currentMode === AuthMode.LOGIN">
-            Don't have an account yet? <a href="javascript:void(0)" (click)="setMode(AuthMode.SIGNUP, authForm)">Register for free</a>
+            Don't have an account?&nbsp;<a href="javascript:void(0)" (click)="setMode(AuthMode.SIGNUP, authForm)">Create an account</a>
           </ng-container>
           <ng-container *ngIf="currentMode !== AuthMode.LOGIN">
-            <a href="javascript:void(0)" (click)="setMode(AuthMode.LOGIN, authForm)">Return to Sign in</a>
+            <a href="javascript:void(0)" (click)="setMode(AuthMode.LOGIN, authForm)">← Return to sign in</a>
           </ng-container>
         </div>
+
       </form>
+
+      <!-- Card Footer -->
+      <div class="card-legal">
+        <a href="#">PRIVACY POLICY</a>
+        <span>·</span>
+        <a href="#">TERMS OF SERVICE</a>
+        <span>·</span>
+        <a href="#">SYSTEM STATUS</a>
+      </div>
     </div>
   </div>
+
 </div>
