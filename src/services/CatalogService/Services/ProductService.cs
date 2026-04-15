@@ -28,7 +28,11 @@ namespace CatalogService.Services
 
         public async Task<IEnumerable<ProductResponseDto>> GetProductsAsync(string? search)
         {
-            var query = _db.Products.Include(p => p.MediaAssets).AsQueryable();
+            var query = _db.Products
+                .Include(p => p.MediaAssets)
+                .Where(p => !p.IsArchived)  // exclude archived from default listing
+                .AsQueryable();
+
             if (!string.IsNullOrWhiteSpace(search))
             {
                 query = query.Where(p => p.Name.Contains(search) || p.SKU.Contains(search));
@@ -37,14 +41,36 @@ namespace CatalogService.Services
             return await query.Select(p => new ProductResponseDto
             {
                 ProductId = p.ProductId, CategoryId = p.CategoryId,
-                SKU = p.SKU, Name = p.Name, Brand = p.Brand, 
+                SKU = p.SKU, Name = p.Name, Brand = p.Brand,
                 Description = p.Description, PublishStatus = p.PublishStatus,
                 Price = p.Price, StockQuantity = p.StockQuantity, WeightKg = p.WeightKg,
                 DimensionsCm = p.DimensionsCm, Material = p.Material, Color = p.Color,
                 WarrantyPeriod = p.WarrantyPeriod, Manufacturer = p.Manufacturer,
                 Highlights = p.Highlights, HardwareInterface = p.HardwareInterface,
-                Photos = p.MediaAssets.Select(m => m.Url).ToList()
+                Photos = p.MediaAssets.Select(m => m.Url).ToList(),
+                IsArchived = p.IsArchived, ArchivedAt = p.ArchivedAt,
+                ArchivedBy = p.ArchivedBy, ArchivedReason = p.ArchivedReason
             }).ToListAsync();
+        }
+
+        public async Task<IEnumerable<ProductResponseDto>> GetArchivedProductsAsync()
+        {
+            return await _db.Products
+                .Include(p => p.MediaAssets)
+                .Where(p => p.IsArchived)
+                .Select(p => new ProductResponseDto
+                {
+                    ProductId = p.ProductId, CategoryId = p.CategoryId,
+                    SKU = p.SKU, Name = p.Name, Brand = p.Brand,
+                    Description = p.Description, PublishStatus = p.PublishStatus,
+                    Price = p.Price, StockQuantity = p.StockQuantity, WeightKg = p.WeightKg,
+                    DimensionsCm = p.DimensionsCm, Material = p.Material, Color = p.Color,
+                    WarrantyPeriod = p.WarrantyPeriod, Manufacturer = p.Manufacturer,
+                    Highlights = p.Highlights, HardwareInterface = p.HardwareInterface,
+                    Photos = p.MediaAssets.Select(m => m.Url).ToList(),
+                    IsArchived = p.IsArchived, ArchivedAt = p.ArchivedAt,
+                    ArchivedBy = p.ArchivedBy, ArchivedReason = p.ArchivedReason
+                }).ToListAsync();
         }
 
         public async Task<ProductResponseDto?> GetProductByIdAsync(int id)
@@ -55,7 +81,9 @@ namespace CatalogService.Services
                 ProductId = p.ProductId, CategoryId = p.CategoryId, SKU = p.SKU, Name = p.Name, Brand = p.Brand, Description = p.Description, PublishStatus = p.PublishStatus,
                 Price = p.Price, StockQuantity = p.StockQuantity, WeightKg = p.WeightKg, DimensionsCm = p.DimensionsCm, Material = p.Material, Color = p.Color, WarrantyPeriod = p.WarrantyPeriod, Manufacturer = p.Manufacturer, Highlights = p.Highlights, HardwareInterface = p.HardwareInterface,
                 Photos = p.MediaAssets.Select(m => m.Url).ToList(),
-                MediaAssets = p.MediaAssets.Select(m => new MediaAssetDto { MediaId = m.MediaId, Url = m.Url }).ToList()
+                MediaAssets = p.MediaAssets.Select(m => new MediaAssetDto { MediaId = m.MediaId, Url = m.Url }).ToList(),
+                IsArchived = p.IsArchived, ArchivedAt = p.ArchivedAt,
+                ArchivedBy = p.ArchivedBy, ArchivedReason = p.ArchivedReason
             };
         }
 
@@ -110,6 +138,47 @@ namespace CatalogService.Services
             return true;
         }
         
+        public async Task<bool> ArchiveProductAsync(int productId, string archivedBy, string reason)
+        {
+            var product = await _db.Products.FindAsync(productId);
+            if (product == null) return false;
+
+            product.IsArchived = true;
+            product.ArchivedAt = DateTime.UtcNow;
+            product.ArchivedBy = archivedBy;
+            product.ArchivedReason = reason;
+            product.PublishStatus = "Archived";
+            product.StockQuantity = 0; // zero out stock on archive
+
+            await _db.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> RestoreProductAsync(int productId)
+        {
+            var product = await _db.Products.FindAsync(productId);
+            if (product == null || !product.IsArchived) return false;
+
+            product.IsArchived = false;
+            product.ArchivedAt = null;
+            product.ArchivedBy = null;
+            product.ArchivedReason = null;
+            product.PublishStatus = "Draft"; // restored products go back to Draft
+
+            await _db.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> SetOutOfStockAsync(int productId)
+        {
+            var product = await _db.Products.FindAsync(productId);
+            if (product == null) return false;
+
+            product.StockQuantity = 0;
+            await _db.SaveChangesAsync();
+            return true;
+        }
+
         public async Task<bool> DeleteMediaAsync(int productId, int mediaId)
         {
             var media = await _db.MediaAssets.FirstOrDefaultAsync(m => m.MediaId == mediaId && m.ProductId == productId);

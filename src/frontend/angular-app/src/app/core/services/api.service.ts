@@ -38,6 +38,18 @@ export class ApiService {
   updateProduct(productId: number, payload: any): Observable<any> {
     return this.withTimeout(this.http.put(`${this.gatewayUrl}/catalog/products/${productId}`, payload));
   }
+  archiveProduct(productId: number, reason: string): Observable<any> {
+    return this.withTimeout(this.http.delete(`${this.gatewayUrl}/catalog/products/${productId}`, { body: { reason } }));
+  }
+  restoreProduct(productId: number): Observable<any> {
+    return this.withTimeout(this.http.put(`${this.gatewayUrl}/catalog/products/${productId}/restore`, {}));
+  }
+  setOutOfStock(productId: number): Observable<any> {
+    return this.withTimeout(this.http.put(`${this.gatewayUrl}/catalog/products/${productId}/out-of-stock`, {}));
+  }
+  getArchivedProducts(): Observable<any> {
+    return this.withTimeout(this.http.get(`${this.gatewayUrl}/catalog/products/archived`));
+  }
   uploadMedia(productId: number, payload: { fileName: string; base64Content: string }): Observable<any> {
     // Use longer timeout for file uploads (base64 can be large)
     return this.http.post(`${this.gatewayUrl}/catalog/products/${productId}/media`, payload)

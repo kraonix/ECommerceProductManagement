@@ -57,6 +57,12 @@ namespace CatalogService.DTOs
 
         // Media assets with IDs for deletion
         public List<MediaAssetDto> MediaAssets { get; set; } = new List<MediaAssetDto>();
+
+        // Archive info
+        public bool IsArchived { get; set; }
+        public DateTime? ArchivedAt { get; set; }
+        public string? ArchivedBy { get; set; }
+        public string? ArchivedReason { get; set; }
     }
 
     public class MediaAssetDto
@@ -69,5 +75,10 @@ namespace CatalogService.DTOs
     {
         [Required] public string FileName { get; set; } = string.Empty;
         [Required] public string Base64Content { get; set; } = string.Empty;
+    }
+
+    public class ArchiveProductDto
+    {
+        [Required] public string Reason { get; set; } = string.Empty;
     }
 }

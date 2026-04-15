@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.IO;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace CatalogService.Controllers
@@ -21,6 +22,10 @@ namespace CatalogService.Controllers
         
         [HttpGet]
         public async Task<IActionResult> Get([FromQuery] string? search) => Ok(await _productService.GetProductsAsync(search));
+
+        [HttpGet("archived")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetArchived() => Ok(await _productService.GetArchivedProductsAsync());
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
@@ -47,6 +52,37 @@ namespace CatalogService.Controllers
                 return success ? NoContent() : NotFound();
             }
             catch (InvalidOperationException ex) { return Conflict(new { message = ex.Message }); }
+        }
+
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Archive(int id, [FromBody] ArchiveProductDto dto)
+        {
+            var adminEmail = User.FindFirstValue(ClaimTypes.Email) ?? "admin";
+            var success = await _productService.ArchiveProductAsync(id, adminEmail, dto.Reason);
+            return success
+                ? Ok(new { message = "Product archived successfully." })
+                : NotFound(new { message = "Product not found." });
+        }
+
+        [HttpPut("{id}/restore")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Restore(int id)
+        {
+            var success = await _productService.RestoreProductAsync(id);
+            return success
+                ? Ok(new { message = "Product restored to Draft." })
+                : NotFound(new { message = "Product not found or not archived." });
+        }
+
+        [HttpPut("{id}/out-of-stock")]
+        [Authorize(Roles = "Admin,ProductManager")]
+        public async Task<IActionResult> SetOutOfStock(int id)
+        {
+            var success = await _productService.SetOutOfStockAsync(id);
+            return success
+                ? Ok(new { message = "Stock set to 0." })
+                : NotFound(new { message = "Product not found." });
         }
 
         [HttpPost("{id}/media")]

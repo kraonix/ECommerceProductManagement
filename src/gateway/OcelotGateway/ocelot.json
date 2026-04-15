@@ -22,6 +22,13 @@
       "UpstreamHttpMethod": [ "GET", "POST" ]
     },
     {
+      "DownstreamPathTemplate": "/api/products/archived",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 5020 } ],
+      "UpstreamPathTemplate": "/gateway/catalog/products/archived",
+      "UpstreamHttpMethod": [ "GET" ]
+    },
+    {
       "DownstreamPathTemplate": "/api/products/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 5020 } ],

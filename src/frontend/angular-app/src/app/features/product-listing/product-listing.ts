@@ -26,6 +26,14 @@ export class ProductListing implements OnInit {
   selectedStatusByProduct: Record<number, string> = {};
   statusRemarkByProduct: Record<number, string> = {};
 
+  // Tab state
+  activeTab: 'active' | 'archived' = 'active';
+  archivedProducts: any[] = [];
+  filteredArchived: any[] = [];
+  isLoadingArchived = false;
+  archivedError = '';
+  isRestoringProduct = false;
+
   // Edit drawer state
   editDrawerProduct: any = null;
   editForm: any = {};
@@ -36,6 +44,13 @@ export class ProductListing implements OnInit {
   isDeletingMedia = false;
   editMessage = '';
   editError = '';
+
+  // Delete flow state
+  showDeleteChoiceModal = false;   // Step 1: "Out of Stock" vs "Delete"
+  showDeleteConfirmModal = false;  // Step 2: type CONFIRM
+  deleteConfirmInput = '';
+  isDeletingProduct = false;
+  deleteProductError = '';
 
   private apiService = inject(ApiService);
   private cdr = inject(ChangeDetectorRef);
@@ -65,10 +80,12 @@ export class ProductListing implements OnInit {
 
   filterProducts() {
     const term = this.searchTerm.toLowerCase().trim();
-    this.filteredProducts = this.products.filter(p => 
-      p.name.toLowerCase().includes(term) || 
-      p.sku.toLowerCase().includes(term)
+    this.filteredProducts = this.products.filter(p =>
+      p.name.toLowerCase().includes(term) || p.sku.toLowerCase().includes(term)
     );
+    if (this.activeTab === 'archived') {
+      this.filterArchived();
+    }
   }
 
   updateStatus(product: any) {
@@ -106,6 +123,66 @@ export class ProductListing implements OnInit {
 
   getStatusClass(status: string): string {
     return (status || 'Draft').toLowerCase().replace(/\s+/g, '-');
+  }
+
+  switchTab(tab: 'active' | 'archived'): void {
+    this.activeTab = tab;
+    this.actionMessage = '';
+    this.actionError = '';
+
+    if (tab === 'archived' && this.archivedProducts.length === 0) {
+      this.loadArchivedProducts();
+    }
+    this.cdr.detectChanges();
+  }
+
+  loadArchivedProducts(): void {
+    this.isLoadingArchived = true;
+    this.archivedError = '';
+
+    this.apiService.getArchivedProducts().subscribe({
+      next: (data: any) => {
+        const products = Array.isArray(data) ? data : data?.items || data?.data || [];
+        this.archivedProducts = products.map((p: any) => this.normalizeArchivedProduct(p));
+        this.filteredArchived = [...this.archivedProducts];
+        this.isLoadingArchived = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.archivedError = 'Failed to load archived products.';
+        this.isLoadingArchived = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  filterArchived(): void {
+    const term = this.searchTerm.toLowerCase().trim();
+    this.filteredArchived = this.archivedProducts.filter(p =>
+      p.name.toLowerCase().includes(term) || p.sku.toLowerCase().includes(term)
+    );
+  }
+
+  restoreProduct(product: any): void {
+    this.isRestoringProduct = true;
+    this.actionMessage = '';
+    this.actionError = '';
+
+    this.apiService.restoreProduct(product.id).subscribe({
+      next: () => {
+        this.isRestoringProduct = false;
+        // Remove from archived list
+        this.archivedProducts = this.archivedProducts.filter(p => p.id !== product.id);
+        this.filteredArchived = this.filteredArchived.filter(p => p.id !== product.id);
+        this.actionMessage = `"${product.name}" restored to Draft.`;
+        this.cdr.detectChanges();
+      },
+      error: (err: any) => {
+        this.isRestoringProduct = false;
+        this.actionError = err?.error?.message || 'Failed to restore product.';
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   openEditDrawer(product: any): void {
@@ -271,6 +348,84 @@ export class ProductListing implements OnInit {
     });
   }
 
+  // ── Delete flow ──
+
+  openDeleteChoiceModal(): void {
+    this.showDeleteChoiceModal = true;
+    this.deleteProductError = '';
+    this.cdr.detectChanges();
+  }
+
+  closeDeleteModals(): void {
+    this.showDeleteChoiceModal = false;
+    this.showDeleteConfirmModal = false;
+    this.deleteConfirmInput = '';
+    this.deleteProductError = '';
+    this.cdr.detectChanges();
+  }
+
+  markOutOfStock(): void {
+    if (!this.editDrawerProduct) return;
+    this.isDeletingProduct = true;
+    this.deleteProductError = '';
+
+    this.apiService.setOutOfStock(this.editDrawerProduct.id).subscribe({
+      next: () => {
+        this.isDeletingProduct = false;
+        this.editForm.stockQuantity = 0;
+        this.closeDeleteModals();
+        this.editMessage = `"${this.editDrawerProduct.name}" is now out of stock.`;
+        // Update table row
+        const idx = this.products.findIndex(p => p.id === this.editDrawerProduct.id);
+        if (idx > -1) this.products[idx] = { ...this.products[idx] };
+        this.cdr.detectChanges();
+      },
+      error: (err: any) => {
+        this.isDeletingProduct = false;
+        this.deleteProductError = err?.error?.message || 'Failed to update stock.';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  proceedToDeleteConfirm(): void {
+    this.showDeleteChoiceModal = false;
+    this.showDeleteConfirmModal = true;
+    this.deleteConfirmInput = '';
+    this.deleteProductError = '';
+    this.cdr.detectChanges();
+  }
+
+  confirmDelete(): void {
+    if (this.deleteConfirmInput !== 'CONFIRM') {
+      this.deleteProductError = 'Please type CONFIRM exactly to proceed.';
+      this.cdr.detectChanges();
+      return;
+    }
+    if (!this.editDrawerProduct) return;
+
+    this.isDeletingProduct = true;
+    this.deleteProductError = '';
+
+    this.apiService.archiveProduct(this.editDrawerProduct.id, `Deleted by admin`).subscribe({
+      next: () => {
+        this.isDeletingProduct = false;
+        // Remove from active list
+        this.products = this.products.filter(p => p.id !== this.editDrawerProduct.id);
+        this.filteredProducts = this.filteredProducts.filter(p => p.id !== this.editDrawerProduct.id);
+        this.closeDeleteModals();
+        this.editDrawerProduct = null;
+        this.actionMessage = 'Product archived successfully.';
+        this.cdr.detectChanges();
+      },
+      error: (err: any) => {
+        this.isDeletingProduct = false;
+        this.deleteProductError = err?.error?.message || 'Failed to delete product.';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
   private normalizeProduct(product: any) {
     return {
       id: product.productId ?? product.ProductId ?? product.id ?? product.Id ?? 0,
@@ -279,6 +434,20 @@ export class ProductListing implements OnInit {
       categoryId: product.categoryId ?? product.CategoryId ?? 0,
       publishStatus: product.publishStatus ?? product.PublishStatus ?? 'Draft',
       photos: product.photos ?? product.Photos ?? []
+    };
+  }
+
+  private normalizeArchivedProduct(product: any) {
+    return {
+      id: product.productId ?? product.ProductId ?? product.id ?? product.Id ?? 0,
+      sku: product.sku ?? product.Sku ?? 'N/A',
+      name: product.name ?? product.Name ?? 'Untitled Product',
+      categoryId: product.categoryId ?? product.CategoryId ?? 0,
+      publishStatus: product.publishStatus ?? product.PublishStatus ?? 'Archived',
+      photos: product.photos ?? product.Photos ?? [],
+      archivedAt: product.archivedAt ?? product.ArchivedAt ?? null,
+      archivedBy: product.archivedBy ?? product.ArchivedBy ?? 'Unknown',
+      archivedReason: product.archivedReason ?? product.ArchivedReason ?? ''
     };
   }
 }

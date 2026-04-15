@@ -23,6 +23,19 @@
         <h1 class="page-title">Catalog Management</h1>
       </div>
       <div class="page-topbar-right">
+        <!-- Tab Toggle -->
+        <div class="ob-tab-toggle">
+          <button class="ob-tab-btn" [class.ob-tab-btn--active]="activeTab === 'active'" (click)="switchTab('active')">
+            Active
+          </button>
+          <button class="ob-tab-btn ob-tab-btn--archived" [class.ob-tab-btn--active]="activeTab === 'archived'" (click)="switchTab('archived')" *ngIf="isAdmin">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/>
+              <line x1="10" y1="12" x2="14" y2="12"/>
+            </svg>
+            Archived
+          </button>
+        </div>
         <input
           class="ob-input ob-search"
           type="text"
@@ -30,7 +43,7 @@
           [(ngModel)]="searchTerm"
           (input)="filterProducts()"
         />
-        <button class="ob-btn-primary" routerLink="/admin/catalog/new" *ngIf="!isContentExecutive">
+        <button class="ob-btn-primary" routerLink="/admin/catalog/new" *ngIf="!isContentExecutive && activeTab === 'active'">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
           </svg>
@@ -91,7 +104,7 @@
     </div>
 
     <!-- Main Table Card -->
-    <div class="ob-table-card">
+    <div class="ob-table-card" *ngIf="activeTab === 'active'">
       <div class="ob-table-header">
         <div>
           <h3 class="ob-table-title">Product Catalog</h3>
@@ -186,6 +199,99 @@
         </table>
       </div>
     </div>
+
+    <!-- ===== ARCHIVED TABLE ===== -->
+    <ng-container *ngIf="activeTab === 'archived'">
+
+      <!-- Loading -->
+      <div class="ob-loading" *ngIf="isLoadingArchived">
+        <div class="ob-spinner"></div>
+        <span>Loading archived products...</span>
+      </div>
+
+      <!-- Error -->
+      <div class="ob-error" *ngIf="archivedError && !isLoadingArchived">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        {{ archivedError }}
+      </div>
+
+      <div class="ob-table-card" *ngIf="!isLoadingArchived && !archivedError">
+        <div class="ob-table-header">
+          <div>
+            <h3 class="ob-table-title">Archived Products</h3>
+            <p class="ob-table-sub">{{ filteredArchived.length }} archived product(s) — restore to make active again</p>
+          </div>
+        </div>
+
+        <div class="ob-table-wrap">
+          <table class="ob-table">
+            <thead>
+              <tr>
+                <th>PRODUCT</th>
+                <th>SKU</th>
+                <th>ARCHIVED BY</th>
+                <th>ARCHIVED ON</th>
+                <th>REASON</th>
+                <th>RESTORE</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="ob-table-row" *ngFor="let p of filteredArchived">
+                <td>
+                  <div class="ob-cell-product">
+                    <div class="ob-cell-av ob-cell-av--archived">
+                      <img *ngIf="p.photos && p.photos.length > 0"
+                           [src]="'http://localhost:5020' + p.photos[0]"
+                           style="width:100%;height:100%;object-fit:cover;border-radius:10px;opacity:0.5;" />
+                      <span *ngIf="!p.photos || p.photos.length === 0">{{ p.name.charAt(0) }}</span>
+                    </div>
+                    <div>
+                      <div class="ob-cell-name ob-cell-name--muted">{{ p.name }}</div>
+                      <div class="ob-cell-sub">#{{ p.id }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="ob-cell-mono">{{ p.sku }}</span>
+                </td>
+                <td>
+                  <span class="ob-archived-by">{{ p.archivedBy || '—' }}</span>
+                </td>
+                <td>
+                  <span class="ob-archived-date">{{ p.archivedAt | date:'MMM d, y' }}</span>
+                </td>
+                <td>
+                  <span class="ob-archived-reason">{{ p.archivedReason || '—' }}</span>
+                </td>
+                <td>
+                  <button class="ob-restore-btn" [disabled]="isRestoringProduct" (click)="restoreProduct(p)">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="1 4 1 10 7 10"/>
+                      <path d="M3.51 15a9 9 0 102.13-9.36L1 10"/>
+                    </svg>
+                    Restore
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="filteredArchived.length === 0">
+                <td colspan="6" class="ob-empty-row">
+                  <div style="display:flex;flex-direction:column;align-items:center;gap:10px;padding:20px 0;color:rgba(199,196,215,0.3);">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/>
+                      <line x1="10" y1="12" x2="14" y2="12"/>
+                    </svg>
+                    <span>No archived products.</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </ng-container>
 
   </ng-container>
 </div>
@@ -361,6 +467,134 @@
         {{ isUploadingMedia ? 'Uploading...' : 'Upload Image' }}
       </button>
 
+      <!-- ── DELETE PRODUCT (Admin only) ── -->
+      <div class="ob-drawer-delete-zone" *ngIf="isAdmin">
+        <div class="ob-drawer-delete-divider">
+          <span>Danger Zone</span>
+        </div>
+        <button class="ob-drawer-delete-btn" (click)="openDeleteChoiceModal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+            <path d="M10 11v6M14 11v6"/>
+            <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+          </svg>
+          Delete Product
+        </button>
+      </div>
+
     </div>
   </ng-container>
+</div>
+
+<!-- ===== MODAL: Step 1 — Choice ===== -->
+<div class="ob-modal-backdrop" *ngIf="showDeleteChoiceModal" (click)="closeDeleteModals()"></div>
+<div class="ob-modal" *ngIf="showDeleteChoiceModal">
+  <div class="ob-modal-header">
+    <div class="ob-modal-icon ob-modal-icon--warn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>
+    </div>
+    <div>
+      <h3 class="ob-modal-title">What would you like to do?</h3>
+      <p class="ob-modal-sub">{{ editDrawerProduct?.name }}</p>
+    </div>
+    <button class="ob-modal-close" (click)="closeDeleteModals()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="ob-modal-body">
+    <div class="ob-modal-error" *ngIf="deleteProductError">{{ deleteProductError }}</div>
+
+    <button class="ob-modal-choice ob-modal-choice--warn" [disabled]="isDeletingProduct" (click)="markOutOfStock()">
+      <div class="ob-modal-choice-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/>
+          <path d="M16 10a4 4 0 01-8 0"/>
+        </svg>
+      </div>
+      <div class="ob-modal-choice-text">
+        <strong>Mark Out of Stock</strong>
+        <span>Sets stock quantity to 0. Product remains visible but can't be purchased.</span>
+      </div>
+    </button>
+
+    <button class="ob-modal-choice ob-modal-choice--danger" [disabled]="isDeletingProduct" (click)="proceedToDeleteConfirm()">
+      <div class="ob-modal-choice-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+          <path d="M10 11v6M14 11v6"/>
+        </svg>
+      </div>
+      <div class="ob-modal-choice-text">
+        <strong>Delete Product</strong>
+        <span>Moves product to the Archived section. This action requires confirmation.</span>
+      </div>
+    </button>
+  </div>
+</div>
+
+<!-- ===== MODAL: Step 2 — Confirm Delete ===== -->
+<div class="ob-modal-backdrop" *ngIf="showDeleteConfirmModal" (click)="closeDeleteModals()"></div>
+<div class="ob-modal" *ngIf="showDeleteConfirmModal">
+  <div class="ob-modal-header">
+    <div class="ob-modal-icon ob-modal-icon--danger">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="3 6 5 6 21 6"/>
+        <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+        <path d="M10 11v6M14 11v6"/>
+        <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+      </svg>
+    </div>
+    <div>
+      <h3 class="ob-modal-title">Are you sure?</h3>
+      <p class="ob-modal-sub">This will archive "{{ editDrawerProduct?.name }}"</p>
+    </div>
+    <button class="ob-modal-close" (click)="closeDeleteModals()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="ob-modal-body">
+    <p class="ob-modal-desc">
+      The product will be moved to the <strong>Archived</strong> section and hidden from the catalog.
+      Stock will be set to 0. You can restore it later from the Archived tab.
+    </p>
+
+    <div class="ob-modal-confirm-field">
+      <label class="ob-modal-confirm-label">Type <strong>CONFIRM</strong> to proceed</label>
+      <input
+        class="ob-modal-confirm-input"
+        type="text"
+        [(ngModel)]="deleteConfirmInput"
+        placeholder="CONFIRM"
+        (keyup.enter)="confirmDelete()"
+        autocomplete="off"
+      />
+    </div>
+
+    <div class="ob-modal-error" *ngIf="deleteProductError">{{ deleteProductError }}</div>
+
+    <div class="ob-modal-actions">
+      <button class="ob-modal-btn-cancel" (click)="closeDeleteModals()">Cancel</button>
+      <button class="ob-modal-btn-delete"
+              [disabled]="deleteConfirmInput !== 'CONFIRM' || isDeletingProduct"
+              (click)="confirmDelete()">
+        <div class="ob-drawer-spinner ob-drawer-spinner--light" *ngIf="isDeletingProduct"></div>
+        <svg *ngIf="!isDeletingProduct" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+        </svg>
+        {{ isDeletingProduct ? 'Deleting...' : 'Delete Product' }}
+      </button>
+    </div>
+  </div>
 </div>

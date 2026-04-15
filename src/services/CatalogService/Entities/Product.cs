@@ -51,6 +51,16 @@ namespace CatalogService.Entities
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+        // Soft-delete / Archive fields
+        public bool IsArchived { get; set; } = false;
+        public DateTime? ArchivedAt { get; set; }
+
+        [MaxLength(200)]
+        public string? ArchivedBy { get; set; }
+
+        [MaxLength(500)]
+        public string? ArchivedReason { get; set; }
+
         public Category Category { get; set; } = null!;
         public ICollection<ProductVariant> Variants { get; set; } = new List<ProductVariant>();
         public ICollection<MediaAsset> MediaAssets { get; set; } = new List<MediaAsset>();
