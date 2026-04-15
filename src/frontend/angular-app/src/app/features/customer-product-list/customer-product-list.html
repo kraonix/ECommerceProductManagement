@@ -183,7 +183,13 @@
 
           <!-- Product Image Area -->
           <div class="sf-card-image">
-            <div class="sf-card-placeholder">{{ product.name.charAt(0) }}</div>
+            <img *ngIf="product.photos && product.photos.length > 0"
+                 [src]="'http://localhost:5020' + product.photos[0]"
+                 [alt]="product.name"
+                 class="sf-card-img" />
+            <div class="sf-card-placeholder" *ngIf="!product.photos || product.photos.length === 0">
+              {{ product.name.charAt(0) }}
+            </div>
             <div class="sf-card-badge" *ngIf="product.isBestseller">Best Seller</div>
             <div class="sf-card-overlay">
               <button class="sf-quick-view" [class.added]="addedProductIds.has(product.id)" (click)="addToCart($event, product)">

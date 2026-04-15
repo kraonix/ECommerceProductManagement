@@ -55,10 +55,12 @@ export class CustomerProductList implements OnInit, OnDestroy {
           highlights: p.highlights ?? p.Highlights ?? '',
           hardwareInterface: p.hardwareInterface ?? p.HardwareInterface ?? '',
           description: p.description ?? p.Description ?? '',
-          publishStatus: p.publishStatus ?? p.PublishStatus ?? 'Draft'
+          publishStatus: p.publishStatus ?? p.PublishStatus ?? 'Draft',
+          photos: p.photos ?? p.Photos ?? []
         }));
         
-        // Removed publish filter so user sees all their DB data.
+        // Only show Published products to customers
+        this.products = this.products.filter(p => p.publishStatus === 'Published');
         this.filteredProducts = [...this.products];
         this.loading = false;
         this.cdr.detectChanges();
@@ -109,7 +111,7 @@ export class CustomerProductList implements OnInit, OnDestroy {
   logout(): void {
     this.userMenuOpen = false;
     localStorage.clear();
-    this.router.navigate(['/login']);
+    this.router.navigate(['/auth/login']);
   }
 
   addToCart(event: Event, product: any): void {

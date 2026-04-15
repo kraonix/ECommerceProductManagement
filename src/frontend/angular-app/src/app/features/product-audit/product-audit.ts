@@ -12,7 +12,7 @@ import { ApiService } from '../../core/services/api.service';
 export class ProductAudit implements OnInit {
   private apiService = inject(ApiService);
 
-  productId = 1;
+  productId = 0;
   searchTerm = '';
   isLoading = false;
   error = '';
@@ -20,10 +20,14 @@ export class ProductAudit implements OnInit {
   selectedEntry: any = null;
 
   ngOnInit(): void {
-    this.loadAudit();
+    // Don't auto-load — wait for user to enter a product ID and click Load Audit
   }
 
   loadAudit(): void {
+    if (!this.productId || this.productId <= 0) {
+      this.error = 'Please enter a valid Product ID.';
+      return;
+    }
     this.error = '';
     this.isLoading = true;
     this.apiService.getProductAuditHistory(this.productId).subscribe({

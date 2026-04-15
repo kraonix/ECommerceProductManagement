@@ -1,83 +1,356 @@
-<div class="wizard-container">
-  <div class="stepper-header card">
-    <div class="step" *ngFor="let s of steps; let i = index" [class.active]="currentStep === i + 1" (click)="setStep(i + 1)">
-      {{ i + 1 }}. {{ s }}
+<div class="wz-root">
+
+  <!-- ===== TOP BAR ===== -->
+  <div class="wz-topbar">
+    <div class="wz-topbar-left">
+      <span class="wz-page-tag">NEW PRODUCT</span>
+      <h1 class="wz-page-title">Add New Product</h1>
+    </div>
+    <div class="wz-topbar-right">
+      <div class="wz-product-id-badge" *ngIf="productId !== null">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        Product #{{ productId }} created
+      </div>
+      <button class="wz-btn-ghost" (click)="router.navigate(['/admin/catalog'])">
+        ← Back to Catalog
+      </button>
     </div>
   </div>
 
-  <div class="wizard-body">
-    <div class="form-area card">
-      <h2>Step {{ currentStep }} - {{ steps[currentStep - 1] }}</h2>
+  <!-- ===== STEPPER ===== -->
+  <div class="wz-stepper">
+    <div
+      class="wz-step"
+      *ngFor="let s of steps; let i = index"
+      [class.wz-step--active]="currentStep === i + 1"
+      [class.wz-step--done]="productId !== null && i + 1 < currentStep"
+      (click)="setStep(i + 1)">
+      <div class="wz-step-bubble">
+        <!-- Checkmark for completed steps -->
+        <svg *ngIf="productId !== null && i + 1 < currentStep" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        <span *ngIf="!(productId !== null && i + 1 < currentStep)">{{ i + 1 }}</span>
+      </div>
+      <span class="wz-step-label">{{ s }}</span>
+      <!-- Connector line -->
+      <div class="wz-step-line" *ngIf="i < steps.length - 1"></div>
+    </div>
+  </div>
 
-      <div class="wizard-meta">
-        <label>
-          Product ID
-          <input type="number" min="1" [(ngModel)]="productId" />
-        </label>
+  <!-- ===== MAIN BODY ===== -->
+  <div class="wz-body">
+
+    <!-- ── FORM CARD ── -->
+    <div class="wz-form-card">
+
+      <!-- Card header -->
+      <div class="wz-form-header">
+        <div class="wz-step-indicator">Step {{ currentStep }} of {{ steps.length }}</div>
+        <h2 class="wz-form-title">{{ steps[currentStep - 1] }}</h2>
       </div>
 
-      <div class="form-placeholder" *ngIf="currentStep === 1 || currentStep === 2">
-        <p>Use product listing/details pages to maintain basic info and media. Continue to pricing/inventory steps.</p>
+      <!-- ── STEP 1: Basic Info ── -->
+      <div class="wz-fields" *ngIf="currentStep === 1">
+        <div class="wz-field-row">
+          <div class="wz-field">
+            <label class="wz-label">Category</label>
+            <select class="wz-select" [(ngModel)]="basicInfo.categoryId" *ngIf="categories.length > 0">
+              <option *ngFor="let cat of categories" [value]="cat.categoryId ?? cat.CategoryId">
+                {{ cat.name ?? cat.Name }}
+              </option>
+            </select>
+            <input class="wz-input" type="number" [(ngModel)]="basicInfo.categoryId" *ngIf="categories.length === 0" placeholder="Category ID" />
+          </div>
+          <div class="wz-field">
+            <label class="wz-label">SKU <span class="wz-required">*</span></label>
+            <input class="wz-input" type="text" [(ngModel)]="basicInfo.sku" placeholder="e.g. KB-MECH-75" />
+          </div>
+        </div>
+        <div class="wz-field-row">
+          <div class="wz-field wz-field--wide">
+            <label class="wz-label">Product Name <span class="wz-required">*</span></label>
+            <input class="wz-input" type="text" [(ngModel)]="basicInfo.name" placeholder="e.g. Flux Core Alpha Keyboard" />
+          </div>
+          <div class="wz-field">
+            <label class="wz-label">Brand</label>
+            <input class="wz-input" type="text" [(ngModel)]="basicInfo.brand" placeholder="e.g. Obsidian" />
+          </div>
+        </div>
+        <div class="wz-field wz-field--full">
+          <label class="wz-label">Description</label>
+          <textarea class="wz-textarea" [(ngModel)]="basicInfo.description" rows="4" placeholder="Describe the product..."></textarea>
+        </div>
+        <div class="wz-field-row">
+          <div class="wz-field">
+            <label class="wz-label">Price ($)</label>
+            <input class="wz-input" type="number" min="0" [(ngModel)]="basicInfo.price" />
+          </div>
+          <div class="wz-field">
+            <label class="wz-label">Stock Quantity</label>
+            <input class="wz-input" type="number" min="0" [(ngModel)]="basicInfo.stockQuantity" />
+          </div>
+        </div>
+        <div class="wz-step-actions">
+          <button class="wz-btn-primary" [disabled]="busy" (click)="saveBasicInfo()">
+            <div class="wz-spinner" *ngIf="busy"></div>
+            <svg *ngIf="!busy" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            {{ productId === null ? 'Create Product' : 'Update Basic Info' }}
+          </button>
+        </div>
       </div>
 
-      <div class="form-grid" *ngIf="currentStep === 3">
-        <label>
-          MRP
-          <input type="number" min="0" [(ngModel)]="pricing.mrp" />
-        </label>
-        <label>
-          Sale Price
-          <input type="number" min="0" [(ngModel)]="pricing.salePrice" />
-        </label>
-        <label>
-          GST (%)
-          <input type="number" min="0" [(ngModel)]="pricing.gst" />
-        </label>
-        <button class="btn-secondary" [disabled]="busy" (click)="savePricing()">Save Pricing</button>
+      <!-- ── STEP 2: Media ── -->
+      <div class="wz-fields" *ngIf="currentStep === 2">
+        <div class="wz-upload-zone" [class.wz-upload-zone--has-file]="mediaFile.fileName">
+          <input type="file" accept=".jpg,.jpeg,.png" (change)="onFileSelected($event)" class="wz-file-input" id="mediaUpload" />
+          <label for="mediaUpload" class="wz-upload-label">
+            <ng-container *ngIf="!mediaFile.fileName">
+              <div class="wz-upload-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                  <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+              </div>
+              <div class="wz-upload-text">Click to select an image</div>
+              <div class="wz-upload-hint">.jpg, .jpeg, .png — max 5MB</div>
+            </ng-container>
+            <ng-container *ngIf="mediaFile.fileName">
+              <div class="wz-upload-icon wz-upload-icon--done">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              </div>
+              <div class="wz-upload-text">{{ mediaFile.fileName }}</div>
+              <div class="wz-upload-hint">Click to change file</div>
+            </ng-container>
+          </label>
+        </div>
+        <div class="wz-step-actions">
+          <button class="wz-btn-primary" [disabled]="busy || !mediaFile.fileName" (click)="uploadMedia()">
+            <div class="wz-spinner" *ngIf="busy"></div>
+            <svg *ngIf="!busy" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+            </svg>
+            Upload Media
+          </button>
+          <button class="wz-btn-ghost" (click)="nextStep()">Skip for now →</button>
+        </div>
       </div>
 
-      <div class="form-grid" *ngIf="currentStep === 4">
-        <label>
-          Available Quantity
-          <input type="number" min="0" [(ngModel)]="inventory.availableQty" />
-        </label>
-        <label>
-          Warehouse Location
-          <input type="text" [(ngModel)]="inventory.warehouseLocation" />
-        </label>
-        <button class="btn-secondary" [disabled]="busy" (click)="saveInventory()">Save Inventory</button>
+      <!-- ── STEP 3: Pricing ── -->
+      <div class="wz-fields" *ngIf="currentStep === 3">
+        <div class="wz-field-row">
+          <div class="wz-field">
+            <label class="wz-label">MRP ($)</label>
+            <input class="wz-input" type="number" min="0" [(ngModel)]="pricing.mrp" />
+          </div>
+          <div class="wz-field">
+            <label class="wz-label">Sale Price ($)</label>
+            <input class="wz-input" type="number" min="0" [(ngModel)]="pricing.salePrice" />
+          </div>
+          <div class="wz-field">
+            <label class="wz-label">GST (%)</label>
+            <input class="wz-input" type="number" min="0" [(ngModel)]="pricing.gst" />
+          </div>
+        </div>
+        <div class="wz-pricing-preview" *ngIf="pricing.mrp > 0 && pricing.salePrice > 0">
+          <div class="wz-pricing-row">
+            <span>MRP</span><span class="wz-price-val">${{ pricing.mrp }}</span>
+          </div>
+          <div class="wz-pricing-row">
+            <span>Sale Price</span><span class="wz-price-val wz-price-val--sale">${{ pricing.salePrice }}</span>
+          </div>
+          <div class="wz-pricing-row">
+            <span>Discount</span>
+            <span class="wz-price-val wz-price-val--discount">
+              {{ pricing.mrp > pricing.salePrice ? ((((pricing.mrp - pricing.salePrice) / pricing.mrp) * 100) | number:'1.0-0') + '% off' : '—' }}
+            </span>
+          </div>
+          <div class="wz-pricing-row">
+            <span>GST</span><span class="wz-price-val">{{ pricing.gst }}%</span>
+          </div>
+        </div>
+        <div class="wz-step-actions">
+          <button class="wz-btn-primary" [disabled]="busy" (click)="savePricing()">
+            <div class="wz-spinner" *ngIf="busy"></div>
+            <svg *ngIf="!busy" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Save Pricing
+          </button>
+        </div>
       </div>
 
-      <div class="form-placeholder" *ngIf="currentStep === 5">
-        <p>Review warnings and readiness score before submit.</p>
+      <!-- ── STEP 4: Inventory ── -->
+      <div class="wz-fields" *ngIf="currentStep === 4">
+        <div class="wz-field-row">
+          <div class="wz-field">
+            <label class="wz-label">Available Quantity</label>
+            <input class="wz-input" type="number" min="0" [(ngModel)]="inventory.availableQty" />
+          </div>
+          <div class="wz-field">
+            <label class="wz-label">Warehouse Location</label>
+            <input class="wz-input" type="text" [(ngModel)]="inventory.warehouseLocation" placeholder="e.g. WH-A1" />
+          </div>
+        </div>
+        <div class="wz-step-actions">
+          <button class="wz-btn-primary" [disabled]="busy" (click)="saveInventory()">
+            <div class="wz-spinner" *ngIf="busy"></div>
+            <svg *ngIf="!busy" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Save Inventory
+          </button>
+        </div>
       </div>
 
-      <div class="form-placeholder" *ngIf="currentStep === 6">
-        <p>Final publish stage is controlled by Admin after approval.</p>
+      <!-- ── STEP 5: Review ── -->
+      <div class="wz-fields" *ngIf="currentStep === 5">
+        <div class="wz-review-info">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          <p>Review the checklist on the right. Resolve all warnings before submitting for admin approval.</p>
+        </div>
+        <div class="wz-summary-grid" *ngIf="productId !== null">
+          <div class="wz-summary-item">
+            <span class="wz-summary-label">Product ID</span>
+            <span class="wz-summary-value">#{{ productId }}</span>
+          </div>
+          <div class="wz-summary-item">
+            <span class="wz-summary-label">Name</span>
+            <span class="wz-summary-value">{{ basicInfo.name || '—' }}</span>
+          </div>
+          <div class="wz-summary-item">
+            <span class="wz-summary-label">SKU</span>
+            <span class="wz-summary-value wz-mono">{{ basicInfo.sku || '—' }}</span>
+          </div>
+          <div class="wz-summary-item">
+            <span class="wz-summary-label">Price</span>
+            <span class="wz-summary-value">${{ basicInfo.price }}</span>
+          </div>
+          <div class="wz-summary-item">
+            <span class="wz-summary-label">Sale Price</span>
+            <span class="wz-summary-value">${{ pricing.salePrice }}</span>
+          </div>
+          <div class="wz-summary-item">
+            <span class="wz-summary-label">Stock</span>
+            <span class="wz-summary-value">{{ inventory.availableQty }} units</span>
+          </div>
+        </div>
       </div>
 
-      <div class="feedback success" *ngIf="message">{{ message }}</div>
-      <div class="feedback error" *ngIf="error">{{ error }}</div>
+      <!-- ── STEP 6: Done ── -->
+      <div class="wz-fields wz-done-state" *ngIf="currentStep === 6">
+        <div class="wz-done-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+        <h3 class="wz-done-title">Submitted for Review</h3>
+        <p class="wz-done-desc">Product <strong>#{{ productId }}</strong> has been submitted. An Admin will review and publish it. You can track its status in the Catalog.</p>
+        <button class="wz-btn-primary" (click)="router.navigate(['/admin/catalog'])">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          Back to Catalog
+        </button>
+      </div>
 
-      <div class="form-actions">
-        <button class="btn-secondary" *ngIf="currentStep > 1" (click)="prevStep()">Previous</button>
-        <button class="btn-primary" *ngIf="currentStep < 6" (click)="nextStep()">Next</button>
+      <!-- Feedback -->
+      <div class="wz-feedback wz-feedback--success" *ngIf="message">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        {{ message }}
+      </div>
+      <div class="wz-feedback wz-feedback--error" *ngIf="error">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        {{ error }}
+      </div>
+
+      <!-- Nav buttons -->
+      <div class="wz-nav" *ngIf="currentStep < 6">
+        <button class="wz-btn-ghost" *ngIf="currentStep > 1" (click)="prevStep()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          Previous
+        </button>
+        <button class="wz-btn-ghost wz-btn-next" *ngIf="currentStep < 5" (click)="nextStep()">
+          Next
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </button>
       </div>
     </div>
 
-    <div class="review-panel card">
-      <h3>Readiness Score</h3>
-      <div class="score-circle">
-        <span>{{ readinessScore }}%</span>
+    <!-- ── READINESS PANEL ── -->
+    <div class="wz-panel">
+
+      <!-- Score ring -->
+      <div class="wz-score-card">
+        <div class="wz-score-label">Readiness</div>
+        <div class="wz-score-ring">
+          <svg viewBox="0 0 80 80" width="80" height="80">
+            <circle cx="40" cy="40" r="34" fill="none" stroke="rgba(70,69,84,0.3)" stroke-width="6"/>
+            <circle
+              cx="40" cy="40" r="34"
+              fill="none"
+              stroke="var(--primary)"
+              stroke-width="6"
+              stroke-linecap="round"
+              stroke-dasharray="213.6"
+              [attr.stroke-dashoffset]="213.6 - (213.6 * readinessScore / 100)"
+              transform="rotate(-90 40 40)"
+              style="transition: stroke-dashoffset 0.5s ease;"
+            />
+          </svg>
+          <span class="wz-score-pct">{{ readinessScore }}%</span>
+        </div>
       </div>
-      <div class="warnings">
-        <h4>Warnings</h4>
-        <ul>
-          <li *ngFor="let warning of warnings">{{ warning }}</li>
-          <li *ngIf="warnings.length === 0">No blocking warnings.</li>
+
+      <!-- Checklist -->
+      <div class="wz-checklist-card">
+        <div class="wz-checklist-title">Checklist</div>
+        <ul class="wz-checklist">
+          <li class="wz-check-item wz-check-item--warn" *ngFor="let w of warnings">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            {{ w }}
+          </li>
+          <li class="wz-check-item wz-check-item--ok" *ngIf="warnings.length === 0">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            All checks passed
+          </li>
         </ul>
       </div>
-      <button class="btn-publish" [disabled]="currentStep < 5 || busy" (click)="submitForReview()">Submit for Approval</button>
+
+      <!-- Submit button -->
+      <button
+        class="wz-btn-submit"
+        [disabled]="currentStep < 5 || busy || productId === null"
+        (click)="submitForReview()">
+        <div class="wz-spinner wz-spinner--dark" *ngIf="busy"></div>
+        <svg *ngIf="!busy" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+        </svg>
+        Submit for Approval
+      </button>
     </div>
+
   </div>
 </div>

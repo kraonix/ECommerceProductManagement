@@ -1,14 +1,15 @@
 using AdminReportingService.Data;
 using AdminReportingService.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Design;
+using Moq;
 using NUnit.Framework;
 using System;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Moq;
-using System.Net.Http;namespace AdminReportingService.Tests
+
+namespace AdminReportingService.Tests
 {
     [TestFixture]
     public class ReportingManagerTests

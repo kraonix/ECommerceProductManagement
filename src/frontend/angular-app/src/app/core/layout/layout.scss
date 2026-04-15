@@ -37,7 +37,6 @@
 .l-sidebar-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   padding: 20px 16px 16px;
   border-bottom: 1px solid rgba(70, 69, 84, 0.12);
   min-height: 64px;
@@ -49,6 +48,13 @@
   align-items: center;
   gap: 8px;
   overflow: hidden;
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 4px;
+  margin: -4px;
+  transition: background 0.15s;
+
+  &:hover { background: rgba(255, 255, 255, 0.05); }
 
   .l-logo-icon {
     width: 30px;
@@ -59,6 +65,7 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    transition: opacity 0.15s;
   }
 
   .l-logo-text {
@@ -67,16 +74,6 @@
     font-weight: 800;
     color: var(--on-surface);
     letter-spacing: -0.02em;
-    white-space: nowrap;
-  }
-
-  .l-logo-sub {
-    font-size: 0.55rem;
-    font-weight: 800;
-    letter-spacing: 0.15em;
-    color: rgba(199, 196, 215, 0.3);
-    align-self: flex-end;
-    margin-bottom: 2px;
     white-space: nowrap;
   }
 }

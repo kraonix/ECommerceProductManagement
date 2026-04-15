@@ -1,9 +1,12 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Moq;
 using NUnit.Framework;
 using ProductWorkflowService.Data;
 using ProductWorkflowService.DTOs;
 using ProductWorkflowService.Services;
 using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace ProductWorkflowService.Tests
@@ -20,7 +23,11 @@ namespace ProductWorkflowService.Tests
             var options = new DbContextOptionsBuilder<WorkflowDbContext>()
                 .UseInMemoryDatabase(Guid.NewGuid().ToString()).Options;
             _db = new WorkflowDbContext(options);
-            _service = new WorkflowManager(_db);
+
+            var mockClientFactory = new Mock<IHttpClientFactory>();
+            var mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
+
+            _service = new WorkflowManager(_db, mockClientFactory.Object, mockHttpContextAccessor.Object);
         }
 
         [TearDown]

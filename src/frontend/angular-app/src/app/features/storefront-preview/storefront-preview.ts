@@ -1,13 +1,13 @@
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-storefront-preview',
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './storefront-preview.html',
   styleUrl: './storefront-preview.scss',
 })
@@ -69,11 +69,20 @@ export class StorefrontPreview implements OnInit {
         id: this.productId,
         name: 'Preview Product',
         sku: 'N/A',
+        brand: '',
         description: 'Product details are currently unavailable.',
-        mrp: 0,
-        salePrice: 0,
-        availableQty: 0,
-        publishStatus: 'Draft'
+        price: 0,
+        stockQuantity: 0,
+        weightKg: 0,
+        dimensionsCm: '',
+        material: '',
+        color: '',
+        warrantyPeriod: '',
+        manufacturer: '',
+        highlights: '',
+        hardwareInterface: '',
+        publishStatus: 'Draft',
+        photos: []
       };
     }
 
@@ -83,7 +92,24 @@ export class StorefrontPreview implements OnInit {
       sku: product.sku ?? product.Sku ?? 'N/A',
       brand: product.brand ?? product.Brand ?? 'Unknown Brand',
       description: product.description ?? product.Description ?? 'No description available.',
-      publishStatus: product.publishStatus ?? product.PublishStatus ?? 'Draft'
+      price: product.price ?? product.Price ?? 0,
+      stockQuantity: product.stockQuantity ?? product.StockQuantity ?? 0,
+      weightKg: product.weightKg ?? product.WeightKg ?? 0,
+      dimensionsCm: product.dimensionsCm ?? product.DimensionsCm ?? '',
+      material: product.material ?? product.Material ?? '',
+      color: product.color ?? product.Color ?? '',
+      warrantyPeriod: product.warrantyPeriod ?? product.WarrantyPeriod ?? '',
+      manufacturer: product.manufacturer ?? product.Manufacturer ?? '',
+      highlights: product.highlights ?? product.Highlights ?? '',
+      hardwareInterface: product.hardwareInterface ?? product.HardwareInterface ?? '',
+      publishStatus: product.publishStatus ?? product.PublishStatus ?? 'Draft',
+      photos: product.photos ?? product.Photos ?? []
     };
   }
+
+  get selectedPhoto(): string {
+    return this.product?.photos?.[this.selectedPhotoIndex] ?? '';
+  }
+
+  selectedPhotoIndex = 0;
 }

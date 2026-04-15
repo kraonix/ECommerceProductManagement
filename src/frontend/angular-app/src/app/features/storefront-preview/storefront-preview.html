@@ -1,87 +1,209 @@
-<div class="preview-page">
-  <div class="card loading-state" *ngIf="loading">
-    <div class="spinner"></div>
-    <p>Loading storefront preview...</p>
+<div class="page-root">
+
+  <!-- Loading -->
+  <div class="ob-loading" *ngIf="loading">
+    <div class="ob-spinner"></div>
+    <span>Loading preview...</span>
   </div>
 
-  <div class="status-alert error" *ngIf="!loading && error">
-    ⚠️ {{ error }}
+  <!-- Error -->
+  <div class="ob-error" *ngIf="error && !loading">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    {{ error }}
   </div>
 
-  <div class="preview-grid" *ngIf="!loading && !error">
-    <!-- Main Product Preview -->
-    <div class="card main-preview-card">
-      <div class="card-header">
-        <h3 class="card-title">Live Amazon-Style Preview</h3>
-        <span class="badge" [ngClass]="(product?.publishStatus || 'draft').toLowerCase()">{{ product?.publishStatus }}</span>
+  <ng-container *ngIf="!loading">
+
+    <!-- Top Bar -->
+    <div class="page-topbar">
+      <div class="page-topbar-left">
+        <span class="page-tag">STOREFRONT PREVIEW</span>
+        <h1 class="page-title">{{ product?.name || 'Loading...' }}</h1>
       </div>
-      
-      <div class="preview-content">
-        <div class="product-gallery">
-          <div class="img-placeholder">{{ product?.name?.charAt(0) || 'P' }}</div>
-        </div>
-        <div class="product-info">
-          <div class="brand-link">{{ product?.brand }}</div>
-          <h1 class="product-title">{{ product?.name }}</h1>
-          
-          <div class="mock-rating">
-            <span class="stars">★★★★☆</span>
-            <span class="count">4,201 ratings</span>
+      <div class="page-topbar-right">
+        <span class="preview-mode-badge">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+          Preview Mode
+        </span>
+        <span class="ob-status-badge" *ngIf="product"
+              [ngClass]="'ob-status-badge--' + (product.publishStatus || 'draft').toLowerCase()">
+          {{ product.publishStatus || 'Draft' }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="preview-grid" *ngIf="product">
+
+      <!-- ── LEFT: Product Detail ── -->
+      <div class="preview-main-card ob-card">
+
+        <!-- Image Stage -->
+        <div class="preview-stage">
+          <!-- Real image -->
+          <img *ngIf="product.photos && product.photos.length > 0"
+               [src]="'http://localhost:5020' + product.photos[selectedPhotoIndex]"
+               [alt]="product.name"
+               class="preview-main-img" />
+
+          <!-- Placeholder -->
+          <div class="preview-placeholder" *ngIf="!product.photos || product.photos.length === 0">
+            <span>{{ product.name?.charAt(0) || '?' }}</span>
           </div>
-          
-          <div class="separator"></div>
-          
-          <div class="mock-price-block">
-            <span class="sale-badge">Limited Time Deal</span>
-            <div class="price-display">
-              <span class="currency">$</span>
-              <span class="whole">199</span>
-              <span class="fraction">99</span>
+
+          <!-- Thumbnail strip -->
+          <div class="preview-thumbs" *ngIf="product.photos && product.photos.length > 1">
+            <button class="preview-thumb"
+                    *ngFor="let photo of product.photos; let i = index"
+                    [class.preview-thumb--active]="selectedPhotoIndex === i"
+                    (click)="selectedPhotoIndex = i">
+              <img [src]="'http://localhost:5020' + photo" [alt]="'Photo ' + (i+1)" />
+            </button>
+          </div>
+        </div>
+
+        <!-- Product Info -->
+        <div class="preview-info">
+
+          <!-- Brand + Stock -->
+          <div class="preview-meta-row">
+            <span class="preview-brand-tag">{{ product.brand | uppercase }}</span>
+            <span class="preview-stock-ok" *ngIf="product.stockQuantity > 5">In Stock</span>
+            <span class="preview-stock-low" *ngIf="product.stockQuantity > 0 && product.stockQuantity <= 5">
+              Only {{ product.stockQuantity }} left
+            </span>
+            <span class="preview-stock-out" *ngIf="product.stockQuantity === 0">Out of Stock</span>
+          </div>
+
+          <h2 class="preview-product-name">{{ product.name }}</h2>
+
+          <!-- Price -->
+          <div class="preview-price-row">
+            <span class="preview-price">{{ product.price | currency }}</span>
+            <span class="preview-price-note">Live price from catalog</span>
+          </div>
+
+          <!-- SKU -->
+          <div class="preview-sku-row">
+            <span class="preview-sku-label">SKU</span>
+            <span class="preview-sku-value">{{ product.sku }}</span>
+          </div>
+
+          <!-- Description -->
+          <div class="preview-section" *ngIf="product.description">
+            <div class="preview-field-label">Description</div>
+            <p class="preview-description">{{ product.description }}</p>
+          </div>
+
+          <!-- Highlights -->
+          <div class="preview-section" *ngIf="product.highlights">
+            <div class="preview-field-label">Key Features</div>
+            <ul class="preview-highlights">
+              <li *ngFor="let feat of product.highlights.split(',')">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                {{ feat.trim() }}
+              </li>
+            </ul>
+          </div>
+
+          <!-- Specs Grid -->
+          <div class="preview-section">
+            <div class="preview-field-label">Specifications</div>
+            <div class="preview-specs-grid">
+              <div class="preview-spec" *ngIf="product.material">
+                <span class="spec-key">Material</span>
+                <span class="spec-val">{{ product.material }}</span>
+              </div>
+              <div class="preview-spec" *ngIf="product.color">
+                <span class="spec-key">Color</span>
+                <span class="spec-val">{{ product.color }}</span>
+              </div>
+              <div class="preview-spec" *ngIf="product.weightKg > 0">
+                <span class="spec-key">Weight</span>
+                <span class="spec-val">{{ product.weightKg }} kg</span>
+              </div>
+              <div class="preview-spec" *ngIf="product.dimensionsCm">
+                <span class="spec-key">Dimensions</span>
+                <span class="spec-val">{{ product.dimensionsCm }} cm</span>
+              </div>
+              <div class="preview-spec" *ngIf="product.hardwareInterface">
+                <span class="spec-key">Interface</span>
+                <span class="spec-val">{{ product.hardwareInterface }}</span>
+              </div>
+              <div class="preview-spec" *ngIf="product.warrantyPeriod">
+                <span class="spec-key">Warranty</span>
+                <span class="spec-val">{{ product.warrantyPeriod }}</span>
+              </div>
+              <div class="preview-spec" *ngIf="product.manufacturer">
+                <span class="spec-key">Manufacturer</span>
+                <span class="spec-val">{{ product.manufacturer }}</span>
+              </div>
             </div>
-            <p style="color: #565959; font-size: 0.85rem; margin-top: 4px;">Mock Preview Pricing</p>
           </div>
-          
-          <div class="product-description-block">
-            <h4>About this item</h4>
-            <p>{{ product?.description }}</p>
-          </div>
-          
-          <div class="meta-data">
-            <strong>SKU:</strong> <span class="sku-code">{{ product?.sku }}</span>
-          </div>
-        </div>
-        
-        <div class="buy-box-mock">
-          <div class="price-mock">$199.99</div>
-          <div class="prime-mock"><span class="check">✓</span> <i>prime</i></div>
-          <div class="delivery-mock">FREE delivery <strong>Tomorrow</strong></div>
-          <p class="stock-mock">In Stock.</p>
-          
-          <button class="btn-yellow">Add to Cart</button>
-          <button class="btn-orange">Buy Now</button>
-          
-          <div class="secure-mock">🔒 Secure transaction</div>
+
+          <!-- Disabled cart button -->
+          <button class="preview-cart-btn" disabled>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+              <path d="M1 1h4l2.68 13.39a2 2 0 001.99 1.61h9.72a2 2 0 001.99-1.61L23 6H6"/>
+            </svg>
+            Add to Cart — Preview Only
+          </button>
         </div>
       </div>
+
+      <!-- ── RIGHT: Related Products ── -->
+      <div class="ob-card related-card">
+        <div class="card-section-label">Related Products</div>
+        <h3 class="related-title">You may also like</h3>
+
+        <div class="related-list" *ngIf="relatedProducts.length > 0">
+          <div class="related-item" *ngFor="let item of relatedProducts">
+            <!-- Thumbnail or letter -->
+            <div class="related-av">
+              <img *ngIf="item.photos && item.photos.length > 0"
+                   [src]="'http://localhost:5020' + item.photos[0]"
+                   [alt]="item.name"
+                   style="width:100%;height:100%;object-fit:cover;border-radius:8px;" />
+              <span *ngIf="!item.photos || item.photos.length === 0">{{ item.name?.charAt(0) }}</span>
+            </div>
+            <div class="related-info">
+              <div class="related-name">{{ item.name }}</div>
+              <div class="related-sku">{{ item.sku }}</div>
+              <div class="related-price" *ngIf="item.price > 0">{{ item.price | currency }}</div>
+            </div>
+            <span class="ob-status-badge ob-status-badge--sm"
+                  [ngClass]="'ob-status-badge--' + (item.publishStatus || 'draft').toLowerCase()">
+              {{ item.publishStatus || 'Draft' }}
+            </span>
+            <a [routerLink]="['/admin/preview', item.id]" class="ob-action-link">View →</a>
+          </div>
+        </div>
+
+        <div class="related-empty" *ngIf="relatedProducts.length === 0">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="2" y="3" width="20" height="14" rx="2"/>
+          </svg>
+          <span>No related products found.</span>
+        </div>
+      </div>
+
     </div>
 
-    <!-- Related Products Panel -->
-    <div class="card related-card">
-      <h3 class="card-title">Customers also viewed these items</h3>
-      <div class="related-grid" *ngIf="relatedProducts.length > 0; else noRelated">
-        <div class="related-item" *ngFor="let item of relatedProducts">
-          <div class="rel-img">{{ item.name.charAt(0) }}</div>
-          <div class="rel-details">
-            <h4 class="rel-title">{{ item.name }}</h4>
-            <div class="rel-brand">{{ item.brand }}</div>
-            <div class="stars">★★★★☆</div>
-            <div class="rel-price">$XX.XX</div>
-          </div>
-        </div>
-      </div>
-      <ng-template #noRelated>
-        <div class="empty-state">No related products found in the catalog.</div>
-      </ng-template>
+    <!-- No product fallback -->
+    <div class="ob-error" *ngIf="!product && !error">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      Product data unavailable.
     </div>
-  </div>
+
+  </ng-container>
 </div>

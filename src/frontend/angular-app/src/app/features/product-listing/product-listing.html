@@ -1,89 +1,366 @@
-<div class="catalog-page">
-  <div class="card toolbar">
-    <div class="search-box">
-      <span class="search-icon">🔍</span>
-      <input type="text" placeholder="Search by exact Name or SKU..." [(ngModel)]="searchTerm" (input)="filterProducts()" class="search-input" />
-      <button class="btn-filter">Filters</button>
+<div class="page-root">
+
+  <!-- Loading -->
+  <div class="ob-loading" *ngIf="isLoading">
+    <div class="ob-spinner"></div>
+    <span>Loading catalog...</span>
+  </div>
+
+  <!-- Error -->
+  <div class="ob-error" *ngIf="loadError && !isLoading">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    {{ loadError }}
+  </div>
+
+  <ng-container *ngIf="!isLoading">
+
+    <!-- Top Bar -->
+    <div class="page-topbar">
+      <div class="page-topbar-left">
+        <span class="page-tag">PRODUCT CATALOG</span>
+        <h1 class="page-title">Catalog Management</h1>
+      </div>
+      <div class="page-topbar-right">
+        <input
+          class="ob-input ob-search"
+          type="text"
+          placeholder="Search by name or SKU..."
+          [(ngModel)]="searchTerm"
+          (input)="filterProducts()"
+        />
+        <button class="ob-btn-primary" routerLink="/admin/catalog/new" *ngIf="!isContentExecutive">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Add New Product
+        </button>
+      </div>
     </div>
-    
-    <div class="actions-box">
-      <button class="btn-outline" *ngIf="isAdmin"><span class="icon">▤</span> Bulk Update</button>
-      <button class="btn-outline" *ngIf="isAdmin || isProductManager"><span class="icon">↑</span> Import</button>
-      <button class="btn-outline"><span class="icon">↓</span> Export</button>
-      <button class="btn-primary" *ngIf="!isContentExecutive" routerLink="/admin/catalog/new">
-        <span class="icon">+</span> Add New Product
+
+    <!-- KPI Strip -->
+    <div class="kpi-strip">
+      <div class="kpi-card">
+        <div class="kpi-label">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+          </svg>
+          Total Products
+        </div>
+        <div class="kpi-value">{{ filteredProducts.length }}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          Published
+        </div>
+        <div class="kpi-value kpi-value--success">
+          {{ filteredProducts.length }}
+        </div>
+        <div class="kpi-sublabel">See table for status breakdown</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          Draft
+        </div>
+        <div class="kpi-value kpi-value--muted">
+          {{ filteredProducts.length }}
+        </div>
+        <div class="kpi-sublabel">See table for status breakdown</div>
+      </div>
+    </div>
+
+    <!-- Feedback Banners -->
+    <div class="ob-success-banner" *ngIf="actionMessage">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+      {{ actionMessage }}
+    </div>
+    <div class="ob-error" *ngIf="actionError">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      {{ actionError }}
+    </div>
+
+    <!-- Main Table Card -->
+    <div class="ob-table-card">
+      <div class="ob-table-header">
+        <div>
+          <h3 class="ob-table-title">Product Catalog</h3>
+          <p class="ob-table-sub">Manage product listings and approval workflow</p>
+        </div>
+      </div>
+
+      <div class="ob-table-wrap">
+        <table class="ob-table">
+          <thead>
+            <tr>
+              <th>PRODUCT</th>
+              <th>SKU</th>
+              <th>CATEGORY</th>
+              <th>STATUS</th>
+              <th>ACTIONS</th>
+              <th *ngIf="isAdmin">WORKFLOW</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="ob-table-row" *ngFor="let p of filteredProducts">
+              <td>
+                <div class="ob-cell-product">
+                  <div class="ob-cell-av ob-cell-av--clickable"
+                       (click)="openEditDrawer(p)"
+                       title="Edit product">
+                    <img *ngIf="p.photos && p.photos.length > 0"
+                         [src]="'http://localhost:5020' + p.photos[0]"
+                         style="width:100%;height:100%;object-fit:cover;border-radius:10px;" />
+                    <span *ngIf="!p.photos || p.photos.length === 0">{{ p.name.charAt(0) }}</span>
+                    <span class="ob-cell-av-hint">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                      </svg>
+                    </span>
+                  </div>
+                  <div>
+                    <div class="ob-cell-name">{{ p.name }}</div>
+                    <div class="ob-cell-sub">#{{ p.id }}</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="ob-cell-mono">{{ p.sku }}</span>
+              </td>
+              <td>
+                <span class="ob-cell-category">
+                  {{ p.categoryId === 1 ? 'Workstations & Seating' : p.categoryId === 2 ? 'Peripherals' : 'General' }}
+                </span>
+              </td>
+              <td>
+                <span class="ob-status-badge" [ngClass]="'ob-status-badge--' + getStatusClass(p.publishStatus)">
+                  {{ p.publishStatus }}
+                </span>
+              </td>
+              <td>
+                <a [routerLink]="['/admin/preview', p.id]" class="ob-action-link">Preview →</a>
+              </td>
+              <td *ngIf="isAdmin">
+                <div class="ob-workflow-cell">
+                  <select class="ob-select ob-select--sm" [(ngModel)]="selectedStatusByProduct[p.id]">
+                    <option value="">Select status</option>
+                    <option value="In Enrichment">In Enrichment</option>
+                    <option value="Ready for Review">Ready for Review</option>
+                    <option value="Approved">Approved</option>
+                    <option value="Published">Published</option>
+                    <option value="Rejected">Rejected</option>
+                    <option value="Archived">Archived</option>
+                    <option value="Draft">Draft</option>
+                  </select>
+                  <input
+                    class="ob-input ob-input--sm"
+                    type="text"
+                    placeholder="Remarks..."
+                    [(ngModel)]="statusRemarkByProduct[p.id]"
+                  />
+                  <button
+                    class="ob-btn-apply"
+                    (click)="updateStatus(p)"
+                    [disabled]="isUpdatingStatus"
+                  >Apply</button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="filteredProducts.length === 0">
+              <td [attr.colspan]="isAdmin ? 6 : 5" class="ob-empty-row">
+                No products found.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </ng-container>
+</div>
+
+<!-- ===== EDIT PRODUCT DRAWER ===== -->
+<div class="ob-drawer-backdrop" *ngIf="editDrawerProduct" (click)="closeEditDrawer()"></div>
+
+<div class="ob-drawer" [class.ob-drawer--open]="editDrawerProduct !== null">
+  <ng-container *ngIf="editDrawerProduct">
+
+    <!-- Header -->
+    <div class="ob-drawer-header">
+      <div>
+        <div class="ob-drawer-tag">EDIT PRODUCT</div>
+        <h3 class="ob-drawer-title">{{ editDrawerProduct.name }}</h3>
+        <div class="ob-drawer-sub">#{{ editDrawerProduct.id }} · {{ editDrawerProduct.sku }}</div>
+      </div>
+      <button class="ob-drawer-close" (click)="closeEditDrawer()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
       </button>
     </div>
-  </div>
 
-  <div class="status-alert success" *ngIf="actionMessage">✓ {{ actionMessage }}</div>
-  <div class="status-alert error" *ngIf="actionError">⚠️ {{ actionError }}</div>
+    <!-- Body -->
+    <div class="ob-drawer-body">
 
-  <div class="card table-card">
-    <div *ngIf="isLoading" class="loading-state">
-      <div class="spinner"></div>
-      <p>Loading Catalog Data...</p>
+      <!-- Feedback -->
+      <div class="ob-drawer-success" *ngIf="editMessage">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        {{ editMessage }}
+      </div>
+      <div class="ob-drawer-error" *ngIf="editError">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        {{ editError }}
+      </div>
+
+      <!-- ── BASIC INFO ── -->
+      <div class="ob-drawer-section-label">Basic Info</div>
+
+      <div class="ob-edit-field">
+        <label class="ob-edit-label">Product Name</label>
+        <input class="ob-edit-input" type="text" [(ngModel)]="editForm.name" />
+      </div>
+      <div class="ob-edit-row">
+        <div class="ob-edit-field">
+          <label class="ob-edit-label">SKU</label>
+          <input class="ob-edit-input" type="text" [(ngModel)]="editForm.sku" />
+        </div>
+        <div class="ob-edit-field">
+          <label class="ob-edit-label">Brand</label>
+          <input class="ob-edit-input" type="text" [(ngModel)]="editForm.brand" />
+        </div>
+      </div>
+      <div class="ob-edit-field">
+        <label class="ob-edit-label">Description</label>
+        <textarea class="ob-edit-input ob-edit-textarea" [(ngModel)]="editForm.description" rows="3"></textarea>
+      </div>
+      <div class="ob-edit-row">
+        <div class="ob-edit-field">
+          <label class="ob-edit-label">Price ($)</label>
+          <input class="ob-edit-input" type="number" min="0" [(ngModel)]="editForm.price" />
+        </div>
+        <div class="ob-edit-field">
+          <label class="ob-edit-label">Stock Qty</label>
+          <input class="ob-edit-input" type="number" min="0" [(ngModel)]="editForm.stockQuantity" />
+        </div>
+      </div>
+
+      <!-- ── SPECS ── -->
+      <div class="ob-drawer-section-label" style="margin-top:8px;">Specifications</div>
+
+      <div class="ob-edit-row">
+        <div class="ob-edit-field">
+          <label class="ob-edit-label">Material</label>
+          <input class="ob-edit-input" type="text" [(ngModel)]="editForm.material" />
+        </div>
+        <div class="ob-edit-field">
+          <label class="ob-edit-label">Color</label>
+          <input class="ob-edit-input" type="text" [(ngModel)]="editForm.color" />
+        </div>
+      </div>
+      <div class="ob-edit-row">
+        <div class="ob-edit-field">
+          <label class="ob-edit-label">Weight (kg)</label>
+          <input class="ob-edit-input" type="number" min="0" step="0.01" [(ngModel)]="editForm.weightKg" />
+        </div>
+        <div class="ob-edit-field">
+          <label class="ob-edit-label">Dimensions (cm)</label>
+          <input class="ob-edit-input" type="text" [(ngModel)]="editForm.dimensionsCm" />
+        </div>
+      </div>
+      <div class="ob-edit-row">
+        <div class="ob-edit-field">
+          <label class="ob-edit-label">Warranty</label>
+          <input class="ob-edit-input" type="text" [(ngModel)]="editForm.warrantyPeriod" />
+        </div>
+        <div class="ob-edit-field">
+          <label class="ob-edit-label">Interface</label>
+          <input class="ob-edit-input" type="text" [(ngModel)]="editForm.hardwareInterface" />
+        </div>
+      </div>
+      <div class="ob-edit-field">
+        <label class="ob-edit-label">Manufacturer</label>
+        <input class="ob-edit-input" type="text" [(ngModel)]="editForm.manufacturer" />
+      </div>
+      <div class="ob-edit-field">
+        <label class="ob-edit-label">Highlights</label>
+        <input class="ob-edit-input" type="text" [(ngModel)]="editForm.highlights" placeholder="Comma-separated features" />
+      </div>
+
+      <!-- Save Button -->
+      <button class="ob-drawer-upload-btn" [disabled]="isSavingEdit" (click)="saveEdit()">
+        <div class="ob-drawer-spinner" *ngIf="isSavingEdit"></div>
+        <svg *ngIf="!isSavingEdit" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        {{ isSavingEdit ? 'Saving...' : 'Save Changes' }}
+      </button>
+
+      <!-- ── IMAGES ── -->
+      <div class="ob-drawer-section-label" style="margin-top:8px;">
+        Images
+        <button class="ob-delete-all-btn" *ngIf="editPhotos.length > 0"
+                [disabled]="isDeletingMedia" (click)="deleteAllPhotos()">
+          Delete All
+        </button>
+      </div>
+
+      <!-- Existing photos -->
+      <div class="ob-photo-grid" *ngIf="editPhotos.length > 0">
+        <div class="ob-photo-item" *ngFor="let photo of editPhotos">
+          <img [src]="'http://localhost:5020' + photo.url" [alt]="'Product image'" />
+          <button class="ob-photo-delete" [disabled]="isDeletingMedia" (click)="deletePhoto(photo.mediaId)" title="Delete image">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="ob-drawer-note" *ngIf="editPhotos.length === 0">No images uploaded yet.</div>
+
+      <!-- Upload new -->
+      <div class="ob-upload-zone" [class.ob-upload-zone--has-file]="mediaFile.fileName" style="margin-top:8px;">
+        <input type="file" accept=".jpg,.jpeg,.png" id="editMediaUpload"
+               class="ob-upload-input" (change)="onMediaFileSelected($event)" />
+        <label for="editMediaUpload" class="ob-upload-label">
+          <ng-container *ngIf="!mediaFile.fileName">
+            <div class="ob-upload-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+            </div>
+            <span class="ob-upload-text">Click to add image</span>
+            <span class="ob-upload-hint">.jpg, .jpeg, .png only</span>
+          </ng-container>
+          <ng-container *ngIf="mediaFile.fileName">
+            <div class="ob-upload-icon ob-upload-icon--done">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <span class="ob-upload-text">{{ mediaFile.fileName }}</span>
+            <span class="ob-upload-hint">Click to change</span>
+          </ng-container>
+        </label>
+      </div>
+
+      <button class="ob-drawer-upload-btn" style="background: rgba(192,193,255,0.12); color: var(--primary); border: 1px solid rgba(192,193,255,0.2);"
+              [disabled]="!mediaFile.fileName || isUploadingMedia" (click)="uploadMedia()">
+        <div class="ob-drawer-spinner" *ngIf="isUploadingMedia"></div>
+        <svg *ngIf="!isUploadingMedia" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+        </svg>
+        {{ isUploadingMedia ? 'Uploading...' : 'Upload Image' }}
+      </button>
+
     </div>
-    <div *ngIf="!isLoading && loadError" class="loading-state error">⚠️ {{ loadError }}</div>
-    
-    <div class="table-responsive" *ngIf="!isLoading && !loadError">
-      <table class="modern-table">
-        <thead>
-          <tr>
-            <th class="col-img">Img</th>
-            <th>Item Details</th>
-            <th>Category</th>
-            <th>Status</th>
-            <th class="col-actions">Actions</th>
-            <th class="col-admin" *ngIf="isAdmin">Admin Workflow</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let p of filteredProducts" class="table-row">
-            <td class="col-img">
-              <div class="img-thumb">{{ p.name.charAt(0) }}</div>
-            </td>
-            <td>
-              <div class="item-name">{{ p.name }}</div>
-              <div class="item-sku">SKU: {{ p.sku }}</div>
-            </td>
-            <td>
-              <span class="category-badge">{{ p.categoryId === 1 ? 'Electronics' : (p.categoryId === 2 ? 'Apparel' : 'Home') }}</span>
-            </td>
-            <td>
-              <span class="status-badge" [ngClass]="getStatusClass(p.publishStatus)">{{ p.publishStatus }}</span>
-            </td>
-            <td class="col-actions">
-              <button class="icon-btn edit" title="Edit Product">✎</button>
-              <button class="icon-btn delete" *ngIf="isAdmin || isProductManager" title="Delete Product">🗑</button>
-            </td>
-            <td *ngIf="isAdmin" class="col-admin">
-              <div class="admin-workflow-controls">
-                <select class="form-select" [(ngModel)]="selectedStatusByProduct[p.id]">
-                  <option value="">Change Status...</option>
-                  <option value="Approved">Approve</option>
-                  <option value="Published">Publish</option>
-                  <option value="Rejected">Reject</option>
-                  <option value="Ready for Review">Review</option>
-                  <option value="Archived">Archive</option>
-                </select>
-                <div class="workflow-input-group">
-                  <input type="text" class="form-input" placeholder="Remarks..." [(ngModel)]="statusRemarkByProduct[p.id]" />
-                  <button class="btn-go" [disabled]="isUpdatingStatus" (click)="updateStatus(p)">Apply</button>
-                </div>
-              </div>
-            </td>
-          </tr>
-          <tr *ngIf="filteredProducts.length === 0" class="empty-row">
-            <td [attr.colspan]="isAdmin ? 6 : 5">
-              <div class="empty-state">
-                <span class="empty-icon">📂</span>
-                <p>No products match your search.</p>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
+  </ng-container>
 </div>

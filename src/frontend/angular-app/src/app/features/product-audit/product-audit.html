@@ -1,63 +1,162 @@
-<div class="audit-container">
-  <div class="card filters-bar">
-    <div class="filters-row">
-      <label>
-        Product ID
-        <input type="number" min="1" [(ngModel)]="productId" />
-      </label>
-      <label>
-        Search
-        <input type="text" placeholder="Search action, user, remarks" [(ngModel)]="searchTerm" />
-      </label>
-      <button class="btn-load" (click)="loadAudit()" [disabled]="isLoading">Load Audit</button>
+<div class="page-root">
+
+  <!-- Top Bar -->
+  <div class="page-topbar">
+    <div class="page-topbar-left">
+      <span class="page-tag">AUDIT TRAIL</span>
+      <h1 class="page-title">Product Audit Logs</h1>
     </div>
   </div>
 
-  <div class="card status-banner" *ngIf="isLoading">Loading audit history...</div>
-  <div class="card status-banner error" *ngIf="!isLoading && error">{{ error }}</div>
-
-  <div class="audit-body">
-    <div class="card audit-table">
-      <div class="card-title">Audit / History Table</div>
-      <table>
-        <thead>
-          <tr>
-            <th>Change</th>
-            <th>By</th>
-            <th>Time</th>
-            <th>Remarks</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            *ngFor="let entry of filteredEntries"
-            [class.selected]="selectedEntry?.timestamp === entry.timestamp && selectedEntry?.action === entry.action"
-            (click)="selectEntry(entry)">
-            <td>{{ entry.action }}</td>
-            <td>{{ entry.actionBy }}</td>
-            <td>{{ entry.timestamp | date:'medium' }}</td>
-            <td>{{ entry.details || '-' }}</td>
-          </tr>
-          <tr *ngIf="!isLoading && filteredEntries.length === 0">
-            <td colspan="4">No audit entries found for this product.</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="card entry-detail">
-      <div class="card-title">Selected Entry Detail</div>
-      <div class="detail-content">
-        <ng-container *ngIf="selectedEntry; else noSelection">
-          <p><strong>Action:</strong> {{ selectedEntry.action }}</p>
-          <p><strong>Performed By:</strong> {{ selectedEntry.actionBy }}</p>
-          <p><strong>Timestamp:</strong> {{ selectedEntry.timestamp | date:'full' }}</p>
-          <div class="snapshot-box">{{ selectedEntry.details || 'No additional details.' }}</div>
-        </ng-container>
-        <ng-template #noSelection>
-          <p>Select an audit entry from the table to view details.</p>
-        </ng-template>
+  <!-- Controls Card -->
+  <div class="ob-card controls-card">
+    <div class="controls-row">
+      <div class="control-group">
+        <label class="control-label">Product ID</label>
+        <input
+          class="ob-input"
+          type="number"
+          placeholder="Enter product ID..."
+          [(ngModel)]="productId"
+          min="1"
+        />
+      </div>
+      <div class="control-group control-group--grow">
+        <label class="control-label">Search Entries</label>
+        <input
+          class="ob-input"
+          type="text"
+          placeholder="Search by action, user, or details..."
+          [(ngModel)]="searchTerm"
+        />
+      </div>
+      <div class="control-group control-group--action">
+        <label class="control-label">&nbsp;</label>
+        <button class="ob-btn-primary" (click)="loadAudit()" [disabled]="isLoading">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" *ngIf="!isLoading">
+            <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/>
+          </svg>
+          <div class="ob-spinner ob-spinner--sm" *ngIf="isLoading"></div>
+          {{ isLoading ? 'Loading...' : 'Load Audit' }}
+        </button>
       </div>
     </div>
+  </div>
+
+  <!-- Error -->
+  <div class="ob-error" *ngIf="error">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    {{ error }}
+  </div>
+
+  <!-- Two-column layout -->
+  <div class="audit-grid">
+
+    <!-- Left: Audit Table -->
+    <div class="ob-table-card">
+      <div class="ob-table-header">
+        <h3 class="ob-table-title">Audit Entries</h3>
+        <p class="ob-table-sub">{{ filteredEntries.length }} record(s) found</p>
+      </div>
+
+      <div class="ob-table-wrap">
+        <table class="ob-table">
+          <thead>
+            <tr>
+              <th>ACTION</th>
+              <th>PERFORMED BY</th>
+              <th>TIMESTAMP</th>
+              <th>DETAILS</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              class="ob-table-row"
+              *ngFor="let entry of filteredEntries"
+              (click)="selectEntry(entry)"
+              [ngClass]="{ 'ob-table-row--selected': selectedEntry === entry }"
+            >
+              <td>
+                <div class="audit-action-cell">
+                  <span class="audit-dot" [ngClass]="'audit-dot--' + entry.action.toLowerCase()"></span>
+                  <span class="audit-action-label">{{ entry.action }}</span>
+                </div>
+              </td>
+              <td>
+                <div class="ob-cell-user">
+                  <div class="ob-cell-av">{{ entry.actionBy?.charAt(0) || '?' }}</div>
+                  <span class="ob-cell-name">{{ entry.actionBy }}</span>
+                </div>
+              </td>
+              <td>
+                <span class="audit-timestamp">{{ entry.timestamp | date:'MMM d, y, h:mm a' }}</span>
+              </td>
+              <td>
+                <span class="audit-details-preview">{{ entry.details | slice:0:40 }}{{ entry.details?.length > 40 ? '...' : '' }}</span>
+              </td>
+            </tr>
+            <tr *ngIf="filteredEntries.length === 0 && !isLoading">
+              <td colspan="4" class="ob-empty-row">
+                <div class="empty-state">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                  </svg>
+                  <span>No audit entries. Enter a Product ID and click Load Audit.</span>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Right: Entry Detail -->
+    <div class="ob-card detail-card">
+      <div class="card-section-label">Entry Detail</div>
+
+      <!-- Selected entry -->
+      <ng-container *ngIf="selectedEntry; else noSelection">
+        <div class="detail-field">
+          <div class="detail-field-label">Action</div>
+          <div class="detail-action-row">
+            <span class="audit-dot" [ngClass]="'audit-dot--' + selectedEntry.action.toLowerCase()"></span>
+            <span class="detail-action-value">{{ selectedEntry.action }}</span>
+          </div>
+        </div>
+
+        <div class="detail-field">
+          <div class="detail-field-label">Performed By</div>
+          <div class="detail-value">{{ selectedEntry.actionBy }}</div>
+        </div>
+
+        <div class="detail-field">
+          <div class="detail-field-label">Timestamp</div>
+          <div class="detail-value">{{ selectedEntry.timestamp | date:'EEEE, MMMM d, y — h:mm:ss a' }}</div>
+        </div>
+
+        <div class="detail-field">
+          <div class="detail-field-label">Details</div>
+          <div class="detail-code-block">{{ selectedEntry.details || 'No details recorded.' }}</div>
+        </div>
+      </ng-container>
+
+      <!-- No selection placeholder -->
+      <ng-template #noSelection>
+        <div class="detail-placeholder">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+          </svg>
+          <span>Select an entry to view details</span>
+        </div>
+      </ng-template>
+    </div>
+
   </div>
 </div>

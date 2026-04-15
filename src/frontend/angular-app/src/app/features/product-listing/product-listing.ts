@@ -26,6 +26,17 @@ export class ProductListing implements OnInit {
   selectedStatusByProduct: Record<number, string> = {};
   statusRemarkByProduct: Record<number, string> = {};
 
+  // Edit drawer state
+  editDrawerProduct: any = null;
+  editForm: any = {};
+  editPhotos: any[] = []; // { mediaId, url }
+  mediaFile = { fileName: '', base64Content: '' };
+  isSavingEdit = false;
+  isUploadingMedia = false;
+  isDeletingMedia = false;
+  editMessage = '';
+  editError = '';
+
   private apiService = inject(ApiService);
   private cdr = inject(ChangeDetectorRef);
 
@@ -97,13 +108,177 @@ export class ProductListing implements OnInit {
     return (status || 'Draft').toLowerCase().replace(/\s+/g, '-');
   }
 
+  openEditDrawer(product: any): void {
+    // Load full product details including media
+    this.apiService.getProductById(product.id).subscribe({
+      next: (data: any) => {
+        this.editDrawerProduct = product;
+        this.editForm = {
+          categoryId: data.categoryId ?? data.CategoryId ?? product.categoryId,
+          sku: data.sku ?? data.Sku ?? product.sku,
+          name: data.name ?? data.Name ?? product.name,
+          brand: data.brand ?? data.Brand ?? '',
+          description: data.description ?? data.Description ?? '',
+          price: data.price ?? data.Price ?? 0,
+          stockQuantity: data.stockQuantity ?? data.StockQuantity ?? 0,
+          weightKg: data.weightKg ?? data.WeightKg ?? 0,
+          dimensionsCm: data.dimensionsCm ?? data.DimensionsCm ?? '',
+          material: data.material ?? data.Material ?? '',
+          color: data.color ?? data.Color ?? '',
+          warrantyPeriod: data.warrantyPeriod ?? data.WarrantyPeriod ?? '',
+          manufacturer: data.manufacturer ?? data.Manufacturer ?? '',
+          highlights: data.highlights ?? data.Highlights ?? '',
+          hardwareInterface: data.hardwareInterface ?? data.HardwareInterface ?? ''
+        };
+        this.editPhotos = (data.mediaAssets ?? data.MediaAssets ?? []).map((m: any) => ({
+          mediaId: m.mediaId ?? m.MediaId,
+          url: m.url ?? m.Url
+        }));
+        this.mediaFile = { fileName: '', base64Content: '' };
+        this.editMessage = '';
+        this.editError = '';
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        // Fallback to basic info if full load fails
+        this.editDrawerProduct = product;
+        this.editForm = { ...product };
+        this.editPhotos = [];
+        this.editMessage = '';
+        this.editError = '';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  closeEditDrawer(): void {
+    this.editDrawerProduct = null;
+    this.cdr.detectChanges();
+  }
+
+  saveEdit(): void {
+    if (!this.editDrawerProduct) return;
+    this.isSavingEdit = true;
+    this.editMessage = '';
+    this.editError = '';
+
+    this.apiService.updateProduct(this.editDrawerProduct.id, this.editForm).subscribe({
+      next: () => {
+        this.isSavingEdit = false;
+        this.editMessage = 'Product updated successfully.';
+        // Update the table row
+        const idx = this.products.findIndex(p => p.id === this.editDrawerProduct.id);
+        if (idx > -1) {
+          this.products[idx] = { ...this.products[idx], name: this.editForm.name, sku: this.editForm.sku };
+          this.filteredProducts = [...this.products];
+        }
+        this.cdr.detectChanges();
+      },
+      error: (err: any) => {
+        this.isSavingEdit = false;
+        this.editError = err?.error?.message || 'Failed to save changes.';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  onMediaFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    this.mediaFile.fileName = file.name;
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.mediaFile.base64Content = (reader.result as string).split(',')[1] ?? '';
+      this.cdr.detectChanges();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  uploadMedia(): void {
+    if (!this.editDrawerProduct || !this.mediaFile.fileName) return;
+    this.isUploadingMedia = true;
+    this.editMessage = '';
+    this.editError = '';
+
+    this.apiService.uploadMedia(this.editDrawerProduct.id, this.mediaFile).subscribe({
+      next: () => {
+        this.isUploadingMedia = false;
+        this.editMessage = 'Image uploaded.';
+        this.mediaFile = { fileName: '', base64Content: '' };
+        // Reload photos
+        this.reloadPhotos();
+      },
+      error: (err: any) => {
+        this.isUploadingMedia = false;
+        this.editError = err?.error?.message || 'Upload failed. Only .jpg, .jpeg, .png allowed.';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  deletePhoto(mediaId: number): void {
+    if (!this.editDrawerProduct) return;
+    this.isDeletingMedia = true;
+    this.editMessage = '';
+    this.editError = '';
+
+    this.apiService.deleteMedia(this.editDrawerProduct.id, mediaId).subscribe({
+      next: () => {
+        this.isDeletingMedia = false;
+        this.editPhotos = this.editPhotos.filter(p => p.mediaId !== mediaId);
+        this.editMessage = 'Image deleted.';
+        this.cdr.detectChanges();
+      },
+      error: (err: any) => {
+        this.isDeletingMedia = false;
+        this.editError = err?.error?.message || 'Failed to delete image.';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  deleteAllPhotos(): void {
+    if (!this.editDrawerProduct || this.editPhotos.length === 0) return;
+    this.isDeletingMedia = true;
+    this.editMessage = '';
+    this.editError = '';
+
+    this.apiService.deleteAllMedia(this.editDrawerProduct.id).subscribe({
+      next: () => {
+        this.isDeletingMedia = false;
+        this.editPhotos = [];
+        this.editMessage = 'All images deleted.';
+        this.cdr.detectChanges();
+      },
+      error: (err: any) => {
+        this.isDeletingMedia = false;
+        this.editError = err?.error?.message || 'Failed to delete images.';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  private reloadPhotos(): void {
+    this.apiService.getProductById(this.editDrawerProduct.id).subscribe({
+      next: (data: any) => {
+        this.editPhotos = (data.mediaAssets ?? data.MediaAssets ?? []).map((m: any) => ({
+          mediaId: m.mediaId ?? m.MediaId,
+          url: m.url ?? m.Url
+        }));
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
   private normalizeProduct(product: any) {
     return {
       id: product.productId ?? product.ProductId ?? product.id ?? product.Id ?? 0,
       sku: product.sku ?? product.Sku ?? 'N/A',
       name: product.name ?? product.Name ?? 'Untitled Product',
       categoryId: product.categoryId ?? product.CategoryId ?? 0,
-      publishStatus: product.publishStatus ?? product.PublishStatus ?? 'Draft'
+      publishStatus: product.publishStatus ?? product.PublishStatus ?? 'Draft',
+      photos: product.photos ?? product.Photos ?? []
     };
   }
 }

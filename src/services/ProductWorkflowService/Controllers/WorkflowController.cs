@@ -38,6 +38,18 @@ namespace ProductWorkflowService.Controllers
             return Ok(await _workflowManager.SubmitForReviewAsync(id, user));
         }
 
+        [HttpPost("{id}/enrich")]
+        [Authorize(Roles = "Admin,ProductManager,ContentExecutive")]
+        public async Task<IActionResult> MarkInEnrichment(int id)
+        {
+            try
+            {
+                var user = User.FindFirstValue(ClaimTypes.Email) ?? "unknown";
+                return Ok(await _workflowManager.MarkInEnrichmentAsync(id, user));
+            }
+            catch (ArgumentException ex) { return BadRequest(new { message = ex.Message }); }
+        }
+
         [HttpPut("{id}/status")]
         [Authorize(Roles = "Admin")] // TC12 Security constraint
         public async Task<IActionResult> UpdateStatus(int id, StatusUpdateDto dto)

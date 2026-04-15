@@ -130,6 +130,7 @@ namespace CatalogService.Data.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<decimal>("Price")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("PublishStatus")
@@ -151,7 +152,8 @@ namespace CatalogService.Data.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<decimal>("WeightKg")
-                        .HasColumnType("decimal(18,2)");
+                        .HasPrecision(10, 3)
+                        .HasColumnType("decimal(10,3)");
 
                     b.HasKey("ProductId");
 

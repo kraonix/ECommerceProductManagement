@@ -2,6 +2,7 @@ using AdminReportingService.Data;
 using AdminReportingService.DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -45,11 +46,14 @@ namespace AdminReportingService.Services
                     var products = JsonSerializer.Deserialize<List<ProductItemDto>>(content, options) ?? new List<ProductItemDto>();
                     
                     summary.TotalActiveProducts = products.Count(p => p.PublishStatus == "Published");
-                    summary.PendingApprovals = products.Count(p => p.PublishStatus == "Pending");
-                    summary.LowStockItems = 0; // Inventory service not integrated, zero placeholder
+                    summary.PendingApprovals = products.Count(p => p.PublishStatus == "Ready for Review");
+                    summary.LowStockItems = products.Count(p => p.StockQuantity >= 0 && p.StockQuantity <= 5);
                     
                     if (summary.PendingApprovals > 0)
-                        summary.Alerts.Add($"There are {summary.PendingApprovals} product(s) pending approval.");
+                        summary.Alerts.Add($"There are {summary.PendingApprovals} product(s) awaiting review approval.");
+
+                    if (summary.LowStockItems > 0)
+                        summary.Alerts.Add($"{summary.LowStockItems} product(s) are low on stock (≤5 units).");
                         
                     var drafts = products.Count(p => p.PublishStatus == "Draft");
                     if (drafts > 0)
@@ -75,6 +79,20 @@ namespace AdminReportingService.Services
             public int ProductId { get; set; }
             public string Name { get; set; } = string.Empty;
             public string PublishStatus { get; set; } = string.Empty;
+            public int StockQuantity { get; set; }
+        }
+
+        public async Task WriteAuditLogAsync(AuditLogDto dto)
+        {
+            _db.AuditLogs.Add(new Entities.AuditLog
+            {
+                ProductId = dto.ProductId,
+                Action = dto.Action,
+                Details = dto.Details,
+                ActionBy = dto.ActionBy,
+                Timestamp = DateTime.UtcNow
+            });
+            await _db.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<AuditLogDto>> GetProductAuditHistoryAsync(int productId)
@@ -91,9 +109,25 @@ namespace AdminReportingService.Services
 
         public async Task<byte[]> ExportDashboardDataAsync()
         {
-            // TC13: Mock CSV export
-            var csv = "Metric,Value\nTotalActiveProducts,150\nPendingApprovals,12\nLowStockItems,5";
-            return await Task.FromResult(System.Text.Encoding.UTF8.GetBytes(csv));
+            var summary = await GetDashboardSummaryAsync();
+
+            var lines = new System.Collections.Generic.List<string>
+            {
+                "Metric,Value",
+                $"TotalActiveProducts,{summary.TotalActiveProducts}",
+                $"PendingApprovals,{summary.PendingApprovals}",
+                $"LowStockItems,{summary.LowStockItems}",
+                $"ExportedAt,{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC"
+            };
+
+            foreach (var alert in summary.Alerts)
+            {
+                // Escape commas in alert text
+                lines.Add($"Alert,\"{alert.Replace("\"", "\"\"")}\"");
+            }
+
+            var csv = string.Join("\n", lines);
+            return System.Text.Encoding.UTF8.GetBytes(csv);
         }
     }
 }

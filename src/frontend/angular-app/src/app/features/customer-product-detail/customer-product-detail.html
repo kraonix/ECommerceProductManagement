@@ -24,13 +24,36 @@
     <!-- Left Stage: Hero Image -->
     <section class="pdp-stage">
       <div class="stage-gradient-top"></div>
-      <!-- Procedurally generated placeholder graphic -->
-      <svg class="placeholder-img" width="100%" height="100%" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
-        <rect width="100%" height="100%" fill="var(--surface-container-high)"/>
-        <circle cx="200" cy="200" r="100" fill="var(--primary)" opacity="0.1" />
-        <path d="M150 250 L200 150 L250 250 Z" stroke="var(--primary)" stroke-width="2" fill="none" opacity="0.5"/>
-        <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="var(--on-surface-variant)" font-family="Inter" font-size="14" letter-spacing="2px">{{ product.sku }}</text>
+
+      <!-- Real image if available -->
+      <img *ngIf="product.photos && product.photos.length > 0"
+           [src]="'http://localhost:5020' + product.photos[selectedPhotoIndex]"
+           [alt]="product.name"
+           class="pdp-main-img" />
+
+      <!-- Fallback SVG placeholder -->
+      <svg *ngIf="!product.photos || product.photos.length === 0"
+           class="placeholder-img" width="100%" height="100%" viewBox="0 0 400 400"
+           preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+        <rect width="100%" height="100%" fill="#1c1b1b"/>
+        <circle cx="200" cy="200" r="100" fill="var(--primary)" opacity="0.08" />
+        <path d="M150 250 L200 150 L250 250 Z" stroke="var(--primary)" stroke-width="2" fill="none" opacity="0.4"/>
+        <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
+              fill="rgba(199,196,215,0.3)" font-family="Inter" font-size="14" letter-spacing="2px">
+          {{ product.sku }}
+        </text>
       </svg>
+
+      <!-- Thumbnail strip (shown when multiple photos) -->
+      <div class="pdp-thumbnails" *ngIf="product.photos && product.photos.length > 1">
+        <button class="pdp-thumb"
+                *ngFor="let photo of product.photos; let i = index"
+                [class.pdp-thumb--active]="selectedPhotoIndex === i"
+                (click)="selectedPhotoIndex = i">
+          <img [src]="'http://localhost:5020' + photo" [alt]="product.name + ' photo ' + (i+1)" />
+        </button>
+      </div>
+
       <div class="stage-gradient-bottom"></div>
     </section>
 

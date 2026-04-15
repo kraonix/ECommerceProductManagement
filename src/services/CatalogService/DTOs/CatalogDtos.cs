@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace CatalogService.DTOs
@@ -50,6 +51,18 @@ namespace CatalogService.DTOs
         public string Manufacturer { get; set; } = string.Empty;
         public string Highlights { get; set; } = string.Empty;
         public string HardwareInterface { get; set; } = string.Empty;
+
+        // Media assets — list of image URLs
+        public List<string> Photos { get; set; } = new List<string>();
+
+        // Media assets with IDs for deletion
+        public List<MediaAssetDto> MediaAssets { get; set; } = new List<MediaAssetDto>();
+    }
+
+    public class MediaAssetDto
+    {
+        public int MediaId { get; set; }
+        public string Url { get; set; } = string.Empty;
     }
 
     public class MediaUploadDto

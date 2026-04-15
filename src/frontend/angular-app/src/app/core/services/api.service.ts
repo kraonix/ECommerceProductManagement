@@ -32,6 +32,27 @@ export class ApiService {
     return this.withTimeout(this.http.post(`${this.gatewayUrl}/auth/change-password`, { currentPassword, newPassword }));
   }
   
+  createProduct(payload: any): Observable<any> {
+    return this.withTimeout(this.http.post(`${this.gatewayUrl}/catalog/products`, payload));
+  }
+  updateProduct(productId: number, payload: any): Observable<any> {
+    return this.withTimeout(this.http.put(`${this.gatewayUrl}/catalog/products/${productId}`, payload));
+  }
+  uploadMedia(productId: number, payload: { fileName: string; base64Content: string }): Observable<any> {
+    // Use longer timeout for file uploads (base64 can be large)
+    return this.http.post(`${this.gatewayUrl}/catalog/products/${productId}/media`, payload)
+      .pipe(timeout(30000));
+  }
+  deleteMedia(productId: number, mediaId: number): Observable<any> {
+    return this.withTimeout(this.http.delete(`${this.gatewayUrl}/catalog/products/${productId}/media/${mediaId}`));
+  }
+  deleteAllMedia(productId: number): Observable<any> {
+    return this.withTimeout(this.http.delete(`${this.gatewayUrl}/catalog/products/${productId}/media`));
+  }
+  getCategories(): Observable<any> {
+    return this.withTimeout(this.http.get(`${this.gatewayUrl}/catalog/categories`));
+  }
+
   getDashboardSummary(): Observable<any> { return this.withTimeout(this.http.get(`${this.gatewayUrl}/admin/reports/dashboard`)); }
   getProducts(): Observable<any> { return this.withTimeout(this.http.get(`${this.gatewayUrl}/catalog/products`)); }
   getProductById(productId: number): Observable<any> { return this.withTimeout(this.http.get(`${this.gatewayUrl}/catalog/products/${productId}`)); }

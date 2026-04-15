@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#c0c1ff"/>
+      <stop offset="100%" stop-color="#8083ff"/>
+    </linearGradient>
+  </defs>
+  <!-- Rounded square background -->
+  <rect width="32" height="32" rx="8" fill="url(#g)"/>
+  <!-- Star / polygon icon -->
+  <path d="M16 4 L18.47 11.53 L26 11.53 L20.27 16.47 L22.73 24 L16 19.47 L9.27 24 L11.73 16.47 L6 11.53 L13.53 11.53 Z"
+        fill="#1000a9" opacity="0.9"/>
+</svg>

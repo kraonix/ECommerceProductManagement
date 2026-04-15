@@ -56,7 +56,7 @@ export class Dashboard implements OnInit {
       }),
       finalize(() => {
         this.loading = false;
-        if (productsFailed && (!this.isAdmin || summaryFailed)) {
+        if (productsFailed) {
           this.error = 'Unable to load dashboard data. Verify gateway and services are running.';
         }
         this.cdr.detectChanges();

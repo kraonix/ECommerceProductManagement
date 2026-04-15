@@ -2,12 +2,14 @@ using IdentityService.DTOs;
 using IdentityService.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Security.Claims;
 
 namespace IdentityService.Controllers
 {
     [ApiController]
     [Route("api/auth")]
+    [EnableRateLimiting("auth")]
     public class AuthController : ControllerBase
     {
         private readonly AuthService _authService;

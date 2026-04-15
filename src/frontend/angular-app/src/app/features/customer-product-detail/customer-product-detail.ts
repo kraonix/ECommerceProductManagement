@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
@@ -14,11 +14,13 @@ export class CustomerProductDetail implements OnInit {
   private route = inject(ActivatedRoute);
   private apiService = inject(ApiService);
   private cartService = inject(CartService);
+  private cdr = inject(ChangeDetectorRef);
 
   loading = true;
   error = '';
   product: any = null;
-  addedFeedback = false; // UX interaction state
+  addedFeedback = false;
+  selectedPhotoIndex = 0;
 
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
@@ -27,11 +29,12 @@ export class CustomerProductDetail implements OnInit {
     this.apiService.getProductById(productId).subscribe({
       next: (data: any) => {
         this.product = {
-          id: data?.id ?? data?.ProductId ?? productId,
+          id: data?.productId ?? data?.ProductId ?? data?.id ?? productId,
           name: data?.name ?? data?.Name ?? 'Untitled Product',
           sku: data?.sku ?? data?.Sku ?? 'N/A',
           brand: data?.brand ?? data?.Brand ?? 'Obsidian Standard',
           price: data?.price ?? data?.Price ?? 0,
+          stockQuantity: data?.stockQuantity ?? data?.StockQuantity ?? 0,
           weightKg: data?.weightKg ?? data?.WeightKg ?? 0,
           dimensionsCm: data?.dimensionsCm ?? data?.DimensionsCm ?? '',
           material: data?.material ?? data?.Material ?? '',
@@ -41,13 +44,26 @@ export class CustomerProductDetail implements OnInit {
           highlights: data?.highlights ?? data?.Highlights ?? '',
           hardwareInterface: data?.hardwareInterface ?? data?.HardwareInterface ?? '',
           description: data?.description ?? data?.Description ?? 'No description available.',
-          publishStatus: data?.publishStatus ?? data?.PublishStatus ?? 'Draft'
+          publishStatus: data?.publishStatus ?? data?.PublishStatus ?? 'Draft',
+          photos: data?.photos ?? data?.Photos ?? []
         };
         this.loading = false;
+        this.cdr.detectChanges();
       },
-      error: () => {
-        this.error = 'Failed to load product details. Returning to Void.';
+      error: (err: any) => {
+        if (err?.name === 'TimeoutError') {
+          this.error = 'Request timed out. Make sure the gateway and catalog service are running.';
+        } else if (err?.status === 0) {
+          this.error = 'Cannot reach the server. Make sure all services are running via run-all.bat.';
+        } else if (err?.status === 401) {
+          this.error = 'Session expired. Please log in again.';
+        } else if (err?.status === 404) {
+          this.error = 'Product not found.';
+        } else {
+          this.error = `Failed to load product (${err?.status ?? 'unknown error'}).`;
+        }
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -56,7 +72,10 @@ export class CustomerProductDetail implements OnInit {
     if (this.product) {
       this.cartService.addToCart(this.product, 1);
       this.addedFeedback = true;
-      setTimeout(() => this.addedFeedback = false, 2000);
+      setTimeout(() => {
+        this.addedFeedback = false;
+        this.cdr.detectChanges();
+      }, 2000);
     }
   }
 }

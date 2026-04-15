@@ -10,22 +10,14 @@
 
     <!-- Sidebar Header -->
     <div class="l-sidebar-header">
-      <div class="l-logo" *ngIf="!sidebarCollapsed()">
+      <div class="l-logo" (click)="toggleSidebar()" [title]="sidebarCollapsed() ? 'Expand sidebar' : 'Collapse sidebar'">
         <div class="l-logo-icon">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
             <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="white"/>
           </svg>
         </div>
-        <span class="l-logo-text">Obsidian</span>
-        <span class="l-logo-sub">ENTERPRISE</span>
+        <span class="l-logo-text" *ngIf="!sidebarCollapsed()">Obsidian</span>
       </div>
-      <button class="l-collapse-btn" (click)="toggleSidebar()" [title]="sidebarCollapsed() ? 'Expand sidebar' : 'Collapse sidebar'">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="3" y1="12" x2="21" y2="12"/>
-          <line x1="3" y1="6" x2="21" y2="6"/>
-          <line x1="3" y1="18" x2="21" y2="18"/>
-        </svg>
-      </button>
     </div>
 
     <!-- Main Nav -->
