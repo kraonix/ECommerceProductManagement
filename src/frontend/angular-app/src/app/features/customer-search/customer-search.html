@@ -1,0 +1,312 @@
+<div class="sr-root">
+
+  <!-- ===== STICKY HEADER (same as storefront) ===== -->
+  <header class="sr-header">
+    <div class="sr-header-inner">
+
+      <!-- Logo -->
+      <div class="sr-logo" (click)="goBack()" style="cursor:pointer;">
+        <div class="sr-logo-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="white"/>
+          </svg>
+        </div>
+        <span class="sr-logo-text">Obsidian</span>
+      </div>
+
+      <!-- Search Bar (prominent, centered) -->
+      <div class="sr-search-wrap">
+        <svg class="sr-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input
+          type="text"
+          class="sr-search-input"
+          placeholder="Search products, brands, features..."
+          [(ngModel)]="searchTerm"
+          (input)="onSearchInput()"
+          (keyup.enter)="onSearchSubmit()"
+          (focus)="onSearchInput()"
+          autocomplete="off"
+          autofocus
+        />
+        <button class="sr-search-btn" (click)="onSearchSubmit()">Search</button>
+
+        <!-- Autocomplete dropdown -->
+        <div class="sr-autocomplete" *ngIf="showSuggestions">
+          <div class="sr-autocomplete-item"
+               *ngFor="let s of suggestions"
+               (mousedown)="selectSuggestion(s)">
+            <span class="sr-autocomplete-icon">
+              <svg *ngIf="s.type === 'product'" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+              </svg>
+              <svg *ngIf="s.type === 'brand'" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/>
+                <line x1="7" y1="7" x2="7.01" y2="7"/>
+              </svg>
+              <svg *ngIf="s.type === 'sku'" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="3" width="20" height="14" rx="2"/>
+              </svg>
+            </span>
+            <span class="sr-autocomplete-text">{{ s.text }}</span>
+            <span class="sr-autocomplete-type">{{ s.type }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Header Actions -->
+      <div class="sr-header-actions">
+        <button class="sr-icon-btn sr-cart-btn" (click)="goToCart()">
+          <span class="sr-cart-badge" *ngIf="cartService.cartTotalCount() > 0">
+            {{ cartService.cartTotalCount() }}
+          </span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/>
+            <path d="M16 10a4 4 0 01-8 0"/>
+          </svg>
+        </button>
+
+        <div class="sr-user-menu" [class.sr-user-menu--open]="userMenuOpen">
+          <div class="sr-user-avatar" (click)="toggleUserMenu()">{{ userName.charAt(0) }}</div>
+          <div class="sr-user-dropdown" *ngIf="userMenuOpen">
+            <div class="sr-dropdown-header">
+              <div class="sr-dropdown-avatar">{{ userName.charAt(0) }}</div>
+              <div>
+                <div class="sr-dropdown-name">{{ userName }}</div>
+              </div>
+            </div>
+            <div class="sr-dropdown-divider"></div>
+            <button class="sr-dropdown-item" (click)="goBack(); closeUserMenu()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+              </svg>
+              Storefront
+            </button>
+            <button class="sr-dropdown-item" routerLink="/customer/cart" (click)="closeUserMenu()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+              </svg>
+              Cart
+            </button>
+            <div class="sr-dropdown-divider"></div>
+            <button class="sr-dropdown-item sr-dropdown-item--danger" (click)="logout()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+                <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+              </svg>
+              Sign out
+            </button>
+          </div>
+          <div class="sr-menu-backdrop" *ngIf="userMenuOpen" (click)="closeUserMenu()"></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== MAIN LAYOUT ===== -->
+  <div class="sr-body">
+
+    <!-- ── LEFT SIDEBAR ── -->
+    <aside class="sr-sidebar">
+
+      <!-- Filters header -->
+      <div class="sr-sidebar-header">
+        <span class="sr-sidebar-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+          </svg>
+          Filters
+        </span>
+        <button class="sr-clear-btn" *ngIf="hasActiveFilters" (click)="clearFilters()">Clear all</button>
+      </div>
+
+      <!-- Sort -->
+      <div class="sr-filter-group">
+        <div class="sr-filter-label">Sort By</div>
+        <div class="sr-radio-list">
+          <label class="sr-radio" *ngFor="let opt of [
+            {val:'relevance', label:'Relevance'},
+            {val:'price-asc', label:'Price: Low to High'},
+            {val:'price-desc', label:'Price: High to Low'},
+            {val:'name-asc', label:'Name: A–Z'}
+          ]">
+            <input type="radio" [value]="opt.val" [(ngModel)]="filters.sortBy" (change)="applyFilters()" />
+            <span>{{ opt.label }}</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Brand -->
+      <div class="sr-filter-group" *ngIf="facets.brands && facets.brands.length > 0">
+        <div class="sr-filter-label">Brand</div>
+        <select class="sr-select" [(ngModel)]="filters.brand" (change)="applyFilters()">
+          <option value="">All Brands</option>
+          <option *ngFor="let b of facets.brands" [value]="b.brand">{{ b.brand }} ({{ b.count }})</option>
+        </select>
+      </div>
+
+      <!-- Price Range -->
+      <div class="sr-filter-group">
+        <div class="sr-filter-label">Price Range</div>
+        <div class="sr-price-inputs">
+          <div class="sr-price-field">
+            <span class="sr-price-prefix">$</span>
+            <input class="sr-price-input" type="number" min="0" placeholder="Min"
+                   [(ngModel)]="filters.minPrice" (change)="applyFilters()" />
+          </div>
+          <span class="sr-price-sep">—</span>
+          <div class="sr-price-field">
+            <span class="sr-price-prefix">$</span>
+            <input class="sr-price-input" type="number" min="0" placeholder="Max"
+                   [(ngModel)]="filters.maxPrice" (change)="applyFilters()" />
+          </div>
+        </div>
+        <div class="sr-price-hint" *ngIf="facets.priceRange">
+          Range: ${{ facets.priceRange.min | number:'1.0-0' }} – ${{ facets.priceRange.max | number:'1.0-0' }}
+        </div>
+      </div>
+
+      <!-- In Stock -->
+      <div class="sr-filter-group">
+        <label class="sr-toggle">
+          <input type="checkbox" [(ngModel)]="filters.inStockOnly" (change)="applyFilters()" />
+          <span class="sr-toggle-track"></span>
+          <span class="sr-toggle-label">In Stock Only</span>
+        </label>
+      </div>
+
+    </aside>
+
+    <!-- ── RESULTS AREA ── -->
+    <main class="sr-results">
+
+      <!-- Results header -->
+      <div class="sr-results-header">
+        <div class="sr-results-meta" *ngIf="!loading">
+          <span class="sr-results-count" *ngIf="searchTerm">
+            <strong>{{ totalCount }}</strong> result{{ totalCount !== 1 ? 's' : '' }} for
+            <span class="sr-query-highlight">"{{ searchTerm }}"</span>
+          </span>
+          <span class="sr-results-count" *ngIf="!searchTerm">
+            <strong>{{ totalCount }}</strong> product{{ totalCount !== 1 ? 's' : '' }}
+          </span>
+          <span class="sr-active-filters" *ngIf="hasActiveFilters">
+            · Filters applied
+            <button class="sr-clear-inline" (click)="clearFilters()">✕ Clear</button>
+          </span>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div class="sr-loading" *ngIf="loading">
+        <div class="sr-spinner"></div>
+        <span>Searching catalog...</span>
+      </div>
+
+      <!-- Error -->
+      <div class="sr-error" *ngIf="error && !loading">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        {{ error }}
+      </div>
+
+      <!-- Empty state -->
+      <div class="sr-empty" *ngIf="!loading && !error && results.length === 0">
+        <div class="sr-empty-icon">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </div>
+        <h3>No results found</h3>
+        <p *ngIf="searchTerm">No products match <strong>"{{ searchTerm }}"</strong>.</p>
+        <p *ngIf="!searchTerm">No products match the selected filters.</p>
+        <button class="sr-btn-ghost" (click)="clearFilters()" *ngIf="hasActiveFilters">Clear filters</button>
+        <button class="sr-btn-ghost" (click)="goBack()">← Back to Storefront</button>
+      </div>
+
+      <!-- Product Grid -->
+      <div class="sr-grid" *ngIf="!loading && !error && results.length > 0">
+        <article class="sr-card"
+                 *ngFor="let product of results"
+                 [routerLink]="['/customer/product', product.productId]">
+
+          <!-- Image -->
+          <div class="sr-card-image">
+            <img *ngIf="product.photos && product.photos.length > 0"
+                 [src]="'http://localhost:5020' + product.photos[0]"
+                 [alt]="product.name"
+                 class="sr-card-img" />
+            <div class="sr-card-placeholder" *ngIf="!product.photos || product.photos.length === 0">
+              {{ product.name.charAt(0) }}
+            </div>
+            <!-- Out of stock overlay -->
+            <div class="sr-card-oos" *ngIf="product.stockQuantity === 0">Out of Stock</div>
+            <!-- Add to cart overlay -->
+            <div class="sr-card-overlay">
+              <button class="sr-quick-add"
+                      [class.sr-quick-add--added]="addedProductIds.has(product.productId)"
+                      [disabled]="product.stockQuantity === 0"
+                      (click)="addToCart($event, product)">
+                <ng-container *ngIf="!addedProductIds.has(product.productId)">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                  </svg>
+                  Add to Cart
+                </ng-container>
+                <ng-container *ngIf="addedProductIds.has(product.productId)">✓ Added</ng-container>
+              </button>
+            </div>
+          </div>
+
+          <!-- Info -->
+          <div class="sr-card-body">
+            <div class="sr-card-brand">{{ product.brand }}</div>
+            <h3 class="sr-card-name">{{ product.name }}</h3>
+            <div class="sr-card-price">{{ product.price | currency }}</div>
+            <div class="sr-card-meta">
+              <span *ngIf="product.material">{{ product.material }}</span>
+              <span *ngIf="product.color"> · {{ product.color }}</span>
+            </div>
+            <div class="sr-card-stock"
+                 [class.sr-card-stock--low]="product.stockQuantity > 0 && product.stockQuantity <= 5"
+                 [class.sr-card-stock--out]="product.stockQuantity === 0">
+              <ng-container *ngIf="product.stockQuantity > 5">In Stock</ng-container>
+              <ng-container *ngIf="product.stockQuantity > 0 && product.stockQuantity <= 5">Only {{ product.stockQuantity }} left</ng-container>
+              <ng-container *ngIf="product.stockQuantity === 0">Out of Stock</ng-container>
+            </div>
+            <!-- Matched fields badge -->
+            <div class="sr-card-matched" *ngIf="product.matchedFields && product.matchedFields.length > 0">
+              <span *ngFor="let f of product.matchedFields.slice(0,2)" class="sr-match-tag">{{ f }}</span>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <!-- Pagination -->
+      <div class="sr-pagination" *ngIf="!loading && totalPages > 1">
+        <button class="sr-page-btn" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </button>
+        <button class="sr-page-btn" *ngIf="currentPage > 3" (click)="goToPage(1)">1</button>
+        <span class="sr-page-ellipsis" *ngIf="currentPage > 4">…</span>
+        <button class="sr-page-btn"
+                *ngFor="let p of pageNumbers"
+                [class.sr-page-btn--active]="p === currentPage"
+                (click)="goToPage(p)">{{ p }}</button>
+        <span class="sr-page-ellipsis" *ngIf="currentPage < totalPages - 3">…</span>
+        <button class="sr-page-btn" *ngIf="currentPage < totalPages - 2" (click)="goToPage(totalPages)">{{ totalPages }}</button>
+        <button class="sr-page-btn" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </button>
+      </div>
+
+    </main>
+  </div>
+
+</div>

@@ -50,6 +50,27 @@ export class ApiService {
   getArchivedProducts(): Observable<any> {
     return this.withTimeout(this.http.get(`${this.gatewayUrl}/catalog/products/archived`));
   }
+
+  // ── Search Service ──
+  search(params: {
+    q?: string; brand?: string; minPrice?: number; maxPrice?: number;
+    inStockOnly?: boolean; sortBy?: string; page?: number; pageSize?: number;
+  }): Observable<any> {
+    const p = new URLSearchParams();
+    if (params.q)           p.set('q', params.q);
+    if (params.brand)       p.set('brand', params.brand);
+    if (params.minPrice != null) p.set('minPrice', String(params.minPrice));
+    if (params.maxPrice != null) p.set('maxPrice', String(params.maxPrice));
+    if (params.inStockOnly) p.set('inStockOnly', 'true');
+    if (params.sortBy)      p.set('sortBy', params.sortBy);
+    if (params.page)        p.set('page', String(params.page));
+    if (params.pageSize)    p.set('pageSize', String(params.pageSize));
+    return this.withTimeout(this.http.get(`${this.gatewayUrl}/search?${p.toString()}`));
+  }
+
+  searchSuggest(q: string): Observable<any> {
+    return this.withTimeout(this.http.get(`${this.gatewayUrl}/search/suggest?q=${encodeURIComponent(q)}`));
+  }
   uploadMedia(productId: number, payload: { fileName: string; base64Content: string }): Observable<any> {
     // Use longer timeout for file uploads (base64 can be large)
     return this.http.post(`${this.gatewayUrl}/catalog/products/${productId}/media`, payload)

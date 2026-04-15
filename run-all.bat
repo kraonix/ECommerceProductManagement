@@ -19,6 +19,9 @@ start "Admin/Reporting Service" cmd /k "cd src\services\AdminReportingService &&
 echo Starting Ocelot API Gateway (Port 5000/5001)...
 start "Ocelot Gateway" cmd /k "cd src\gateway\OcelotGateway && dotnet run"
 
+echo Starting Search Service (Port 5050/5051)...
+start "Search Service" cmd /k "cd src\services\SearchService && dotnet run"
+
 echo Starting Angular Frontend (Port 4200)...
 start "Angular Frontend" cmd /k "cd src\frontend\angular-app && npm start"
 

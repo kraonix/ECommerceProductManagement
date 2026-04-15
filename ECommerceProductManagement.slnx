@@ -8,6 +8,7 @@
     <Project Path="src/services/CatalogService/CatalogService.csproj" />
     <Project Path="src/services/IdentityService/IdentityService.csproj" />
     <Project Path="src/services/ProductWorkflowService/ProductWorkflowService.csproj" />
+    <Project Path="src/services/SearchService/SearchService.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/AdminReportingService.Tests/AdminReportingService.Tests.csproj" />

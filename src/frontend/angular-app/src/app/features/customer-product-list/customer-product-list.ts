@@ -85,6 +85,24 @@ export class CustomerProductList implements OnInit, OnDestroy {
       `${p.name} ${p.sku}`.toLowerCase().includes(term)
     );
   }
+
+  submitSearch(): void {
+    const term = this.searchTerm.trim();
+    if (term) {
+      this.router.navigate(['/customer/search'], { queryParams: { q: term } });
+    }
+  }
+
+  selectCategory(query: string): void {
+    if (!query) {
+      // "All" — reset filter on current page
+      this.searchTerm = '';
+      this.filteredProducts = [...this.products];
+    } else {
+      // Navigate to search results with the category query
+      this.router.navigate(['/customer/search'], { queryParams: { q: query } });
+    }
+  }
   
   startCarousel(): void {
     this.sliderInterval = setInterval(() => {

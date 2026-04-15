@@ -10,6 +10,7 @@ import { Login } from './features/auth/login/login';
 import { CustomerProductList } from './features/customer-product-list/customer-product-list';
 import { CustomerProductDetail } from './features/customer-product-detail/customer-product-detail';
 import { CustomerCartComponent } from './features/customer-cart/customer-cart';
+import { CustomerSearch } from './features/customer-search/customer-search';
 import { authGuard, roleGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
@@ -36,6 +37,7 @@ export const routes: Routes = [
     data: { roles: ['Customer'] },
     children: [
       { path: 'products', component: CustomerProductList },
+      { path: 'search', component: CustomerSearch },
       { path: 'product/:id', component: CustomerProductDetail },
       { path: 'preview/:id', component: StorefrontPreview },
       { path: 'cart', component: CustomerCartComponent },
