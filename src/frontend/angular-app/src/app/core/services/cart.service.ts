@@ -54,8 +54,10 @@ export class CartService {
         name: product.name,
         price: product.price,
         quantity: quantity,
-        // We'll map the first photo or fallback if none
-        imageUrl: (product.photos && product.photos.length > 0) ? product.photos[0] : null
+        // Store full URL so cart can display images directly
+        imageUrl: (product.photos && product.photos.length > 0)
+          ? 'http://localhost:5020' + product.photos[0]
+          : undefined
       });
     }
 

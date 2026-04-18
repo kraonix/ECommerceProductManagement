@@ -20,9 +20,9 @@
 
       <!-- Nav Links -->
       <nav class="sf-nav">
-        <a href="#" class="sf-nav-link sf-nav-link--active">Overview</a>
-        <a href="#" class="sf-nav-link">Reports</a>
-        <a href="#" class="sf-nav-link">Activity</a>
+        <a routerLink="/customer/products" class="sf-nav-link sf-nav-link--active">Shop</a>
+        <a (click)="selectCategory('keyboard mouse')" class="sf-nav-link" style="cursor:pointer;">Performance</a>
+        <a (click)="selectCategory('desk chair')" class="sf-nav-link" style="cursor:pointer;">Workspace</a>
       </nav>
 
       <!-- Search -->
@@ -113,18 +113,93 @@
     </div>
   </header>
 
-  <!-- ===== HERO BANNER ===== -->
+  <!-- ===== HERO CAROUSEL ===== -->
   <section class="sf-hero">
-    <div class="sf-hero-inner">
-      <div class="sf-hero-tag">OBSIDIAN FLUX EDITION</div>
-      <h1 class="sf-hero-headline">Precision-engineered<br><span class="sf-hero-accent">for the modern architect.</span></h1>
-      <p class="sf-hero-sub">Obsidian Flux Edition available now. Built for enterprise velocity.</p>
-      <div class="sf-hero-actions">
-        <button class="sf-btn-primary">Explore Collection</button>
-        <button class="sf-btn-ghost">View Catalog →</button>
+
+    <!-- Skeleton while loading -->
+    <div class="sf-hero-skeleton" *ngIf="heroSlides.length === 0">
+      <div class="sf-hero-skeleton-content">
+        <div class="sf-hero-skeleton-tag"></div>
+        <div class="sf-hero-skeleton-title"></div>
+        <div class="sf-hero-skeleton-sub"></div>
+        <div class="sf-hero-skeleton-actions">
+          <div class="sf-hero-skeleton-btn"></div>
+          <div class="sf-hero-skeleton-btn sf-hero-skeleton-btn--ghost"></div>
+        </div>
       </div>
     </div>
-    <!-- Decorative -->
+
+    <!-- Slides -->
+    <div class="sf-hero-slides" *ngIf="heroSlides.length > 0">
+      <div class="sf-hero-slide"
+           *ngFor="let slide of heroSlides; let i = index"
+           [class.sf-hero-slide--active]="currentSlide === i"
+           [class.sf-hero-slide--prev]="prevSlide === i">
+
+        <!-- Background image -->
+        <div class="sf-hero-bg">
+          <img *ngIf="slide.photos && slide.photos.length > 0"
+               [src]="'http://localhost:5020' + slide.photos[0]"
+               [alt]="slide.name"
+               class="sf-hero-bg-img" />
+          <div class="sf-hero-bg-fallback" *ngIf="!slide.photos || slide.photos.length === 0">
+            {{ slide.name.charAt(0) }}
+          </div>
+          <div class="sf-hero-bg-overlay"></div>
+        </div>
+
+        <!-- Content -->
+        <div class="sf-hero-content">
+          <div class="sf-hero-tag">{{ slide.brand | uppercase }} · {{ slide.categoryLabel }}</div>
+          <h1 class="sf-hero-headline">{{ slide.name }}</h1>
+          <p class="sf-hero-sub">{{ slide.highlights || slide.description }}</p>
+          <div class="sf-hero-meta">
+            <span class="sf-hero-price">{{ slide.price | currency }}</span>
+            <span class="sf-hero-warranty" *ngIf="slide.warrantyPeriod">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+              {{ slide.warrantyPeriod }} warranty
+            </span>
+          </div>
+          <div class="sf-hero-actions">
+            <button class="sf-btn-primary" (click)="addHeroToCart(slide)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              {{ heroAddedId === slide.id ? 'Added to Cart' : 'Add to Cart' }}
+            </button>
+            <button class="sf-btn-ghost" [routerLink]="['/customer/product', slide.id]">
+              View Details →
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Slide indicators -->
+    <div class="sf-hero-dots" *ngIf="heroSlides.length > 0">
+      <button class="sf-hero-dot"
+              *ngFor="let slide of heroSlides; let i = index"
+              [class.sf-hero-dot--active]="currentSlide === i"
+              (click)="goToSlide(i)">
+      </button>
+    </div>
+
+    <!-- Prev / Next arrows -->
+    <button class="sf-hero-arrow sf-hero-arrow--prev" *ngIf="heroSlides.length > 0" (click)="prevHeroSlide()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+    </button>
+    <button class="sf-hero-arrow sf-hero-arrow--next" *ngIf="heroSlides.length > 0" (click)="nextHeroSlide()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="9 18 15 12 9 6"/>
+      </svg>
+    </button>
+
+    <!-- Decorative glows -->
     <div class="sf-hero-glow sf-hero-glow--primary"></div>
     <div class="sf-hero-glow sf-hero-glow--secondary"></div>
   </section>
@@ -148,21 +223,105 @@
 
     <!-- Product Grid -->
     <div *ngIf="!loading && !error">
-      <!-- Section Header -->
-      <div class="sf-section-header">
-        <div>
-          <h2 class="sf-section-title">Featured Products</h2>
-          <p class="sf-section-sub">{{ filteredProducts.length }} items available</p>
+
+      <!-- ── WORKSPACE SERIES ── -->
+      <ng-container *ngIf="getCategory(1).length > 0">
+        <div class="sf-section-header">
+          <div>
+            <h2 class="sf-section-title">The Workspace Series</h2>
+            <p class="sf-section-sub">Precision-crafted for the modern professional environment</p>
+          </div>
         </div>
-        <div class="sf-sort-row">
-          <span class="sf-sort-label">Sort by</span>
-          <select class="sf-sort-select">
-            <option>Newest</option>
-            <option>Price: Low to High</option>
-            <option>Price: High to Low</option>
-          </select>
+        <div class="sf-product-grid sf-product-grid--workspace">
+          <article class="sf-card sf-card--workspace"
+            *ngFor="let product of getCategory(1); let i = index"
+            [routerLink]="['/customer/product', product.id]"
+            [style.animation-delay]="(i * 60) + 'ms'">
+            <div class="sf-card-image">
+              <img *ngIf="product.photos && product.photos.length > 0"
+                   [src]="'http://localhost:5020' + product.photos[0]"
+                   [alt]="product.name" class="sf-card-img" />
+              <div class="sf-card-placeholder" *ngIf="!product.photos || product.photos.length === 0">
+                {{ product.name.charAt(0) }}
+              </div>
+              <div class="sf-card-hover-bar" (click)="addToCart($event, product)">
+                <ng-container *ngIf="!addedProductIds.has(product.id)">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                  </svg>
+                  Add to Cart
+                </ng-container>
+                <ng-container *ngIf="addedProductIds.has(product.id)">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  Added
+                </ng-container>
+              </div>
+            </div>
+            <div class="sf-card-info">
+              <div class="sf-card-title-row">
+                <h3 class="sf-card-name">{{ product.name }}</h3>
+                <span class="sf-card-price">{{ product.price | currency }}</span>
+              </div>
+              <p class="sf-card-desc">{{ product.highlights || product.description }}</p>
+              <div class="sf-card-specs" *ngIf="product.material || product.warrantyPeriod">
+                <span *ngIf="product.material">{{ product.material }}</span>
+                <span *ngIf="product.warrantyPeriod" class="sf-card-warranty">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                  </svg>
+                  {{ product.warrantyPeriod }}
+                </span>
+              </div>
+            </div>
+          </article>
         </div>
-      </div>
+      </ng-container>
+
+      <!-- ── PERFORMANCE EDGE ── -->
+      <ng-container *ngIf="getCategory(2).length > 0">
+        <div class="sf-section-header" style="margin-top: 64px;">
+          <div>
+            <h2 class="sf-section-title">Performance Edge</h2>
+            <p class="sf-section-sub">High-precision peripherals engineered for velocity</p>
+          </div>
+        </div>
+        <div class="sf-product-grid sf-product-grid--peripherals">
+          <article class="sf-card sf-card--peripheral"
+            *ngFor="let product of getCategory(2); let i = index"
+            [routerLink]="['/customer/product', product.id]"
+            [style.animation-delay]="(i * 50) + 'ms'">
+            <div class="sf-card-image sf-card-image--square">
+              <img *ngIf="product.photos && product.photos.length > 0"
+                   [src]="'http://localhost:5020' + product.photos[0]"
+                   [alt]="product.name" class="sf-card-img" />
+              <div class="sf-card-placeholder" *ngIf="!product.photos || product.photos.length === 0">
+                {{ product.name.charAt(0) }}
+              </div>
+              <!-- Floating cart icon — bottom right of image -->
+              <button class="sf-card-cart-icon"
+                      [class.sf-card-cart-icon--added]="addedProductIds.has(product.id)"
+                      (click)="addToCart($event, product)">
+                <svg *ngIf="!addedProductIds.has(product.id)" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/>
+                  <path d="M16 10a4 4 0 01-8 0"/>
+                </svg>
+                <svg *ngIf="addedProductIds.has(product.id)" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              </button>
+            </div>
+            <div class="sf-card-info sf-card-info--minimal">
+              <h3 class="sf-card-name">{{ product.name }}</h3>
+              <div class="sf-card-bottom-row">
+                <span class="sf-card-price">{{ product.price | currency }}</span>
+                <span class="sf-card-desc sf-card-desc--short" *ngIf="product.material">{{ product.material }}</span>
+              </div>
+            </div>
+          </article>
+        </div>
+      </ng-container>
 
       <!-- Empty State -->
       <div class="sf-empty" *ngIf="filteredProducts.length === 0">
@@ -175,76 +334,6 @@
         <p>Try adjusting your search or browse all categories.</p>
       </div>
 
-      <!-- Products -->
-      <div class="sf-product-grid" *ngIf="filteredProducts.length > 0">
-        <article class="sf-card"
-          *ngFor="let product of filteredProducts"
-          [routerLink]="['/customer/product', product.id]">
-
-          <!-- Product Image Area -->
-          <div class="sf-card-image">
-            <img *ngIf="product.photos && product.photos.length > 0"
-                 [src]="'http://localhost:5020' + product.photos[0]"
-                 [alt]="product.name"
-                 class="sf-card-img" />
-            <div class="sf-card-placeholder" *ngIf="!product.photos || product.photos.length === 0">
-              {{ product.name.charAt(0) }}
-            </div>
-            <div class="sf-card-badge" *ngIf="product.isBestseller">Best Seller</div>
-            <div class="sf-card-overlay">
-              <button class="sf-quick-view" [class.added]="addedProductIds.has(product.id)" (click)="addToCart($event, product)">
-                <ng-container *ngIf="!addedProductIds.has(product.id)">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/>
-                    <path d="M16 10a4 4 0 01-8 0"/>
-                  </svg>
-                  Add to Cart
-                </ng-container>
-                <ng-container *ngIf="addedProductIds.has(product.id)">
-                  Added!
-                </ng-container>
-              </button>
-            </div>
-          </div>
-
-          <!-- Product Info -->
-          <div class="sf-card-body">
-            <div class="sf-card-meta">
-              <span class="sf-card-brand">{{ product.brand }}</span>
-              <span class="sf-card-sku">{{ product.material }} • {{ product.color }}</span>
-            </div>
-            <h3 class="sf-card-name">{{ product.name }}</h3>
-            <p class="sf-card-price" style="color: var(--primary); font-weight: 700; margin: 4px 0 8px 0;">
-               {{ product.price | currency }}
-            </p>
-            <p class="sf-card-desc">{{ product.description }}</p>
-            
-            <div class="sf-card-perks" style="font-size: 0.75rem; color: var(--on-surface-variant); margin-bottom: 24px;">
-              <div>🛡️ {{ product.warrantyPeriod }}</div>
-              <div *ngIf="product.highlights" style="margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                ✨ {{ product.highlights }}
-              </div>
-            </div>
-
-            <div class="sf-card-footer">
-              <span class="sf-card-status" [ngClass]="'status-' + product.publishStatus.toLowerCase()">
-                {{ product.publishStatus }}
-              </span>
-              <button class="sf-btn-cart" [class.added]="addedProductIds.has(product.id)" (click)="addToCart($event, product)">
-                <ng-container *ngIf="!addedProductIds.has(product.id)">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-                  </svg>
-                  Add
-                </ng-container>
-                <ng-container *ngIf="addedProductIds.has(product.id)">
-                  Added
-                </ng-container>
-              </button>
-            </div>
-          </div>
-        </article>
-      </div>
     </div>
 
     <!-- ===== INFO STRIPS ===== -->

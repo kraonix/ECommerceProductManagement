@@ -27,13 +27,12 @@ export class CustomerProductList implements OnInit, OnDestroy {
   userMenuOpen = false;
   addedProductIds = new Set<number>();
 
-  // Carousel State
+  // Hero carousel
+  heroSlides: any[] = [];
   currentSlide = 0;
-  carouselSlides = [
-    { title: 'Flux Core Alpha', subtitle: 'Enterprise Performance', bgColor: '#1c1b1b' },
-    { title: 'Obsidian Chrono', subtitle: 'Analog Precision', bgColor: '#201f1f' },
-    { title: 'Aura Sound Shell', subtitle: 'Noise Isolation', bgColor: '#1a1a1e' }
-  ];
+  prevSlide = -1;
+  heroAddedId: number | null = null;
+  private heroInterval: any;
   private sliderInterval: any;
 
   ngOnInit(): void {
@@ -42,6 +41,7 @@ export class CustomerProductList implements OnInit, OnDestroy {
         const products = Array.isArray(data) ? data : data?.items || data?.data || [];
         this.products = products.map((p: any) => ({
           id: p.productId ?? p.ProductId ?? p.id ?? p.Id ?? 0,
+          categoryId: p.categoryId ?? p.CategoryId ?? 0,
           name: p.name ?? p.Name ?? 'Untitled Product',
           sku: p.sku ?? p.Sku ?? 'N/A',
           brand: p.brand ?? p.Brand ?? 'Unknown Brand',
@@ -64,8 +64,17 @@ export class CustomerProductList implements OnInit, OnDestroy {
         this.filteredProducts = [...this.products];
         this.loading = false;
         this.cdr.detectChanges();
-        
-        this.startCarousel();
+
+        // Build hero slides from featured products (highest price = most premium)
+        const featured = [...this.products]
+          .sort((a, b) => b.price - a.price)
+          .slice(0, 5)
+          .map(p => ({
+            ...p,
+            categoryLabel: p.categoryId === 1 ? 'Workspace Series' : 'Performance Edge'
+          }));
+        this.heroSlides = featured;
+        this.startHeroCarousel();
       },
       error: () => {
         this.error = 'Failed to load products.';
@@ -77,6 +86,43 @@ export class CustomerProductList implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     if (this.sliderInterval) clearInterval(this.sliderInterval);
+    if (this.heroInterval) clearInterval(this.heroInterval);
+  }
+
+  startHeroCarousel(): void {
+    this.heroInterval = setInterval(() => this.nextHeroSlide(), 5000);
+  }
+
+  nextHeroSlide(): void {
+    if (!this.heroSlides.length) return;
+    this.prevSlide = this.currentSlide;
+    this.currentSlide = (this.currentSlide + 1) % this.heroSlides.length;
+    this.cdr.detectChanges();
+  }
+
+  prevHeroSlide(): void {
+    if (!this.heroSlides.length) return;
+    this.prevSlide = this.currentSlide;
+    this.currentSlide = (this.currentSlide - 1 + this.heroSlides.length) % this.heroSlides.length;
+    this.cdr.detectChanges();
+  }
+
+  goToSlide(index: number): void {
+    this.prevSlide = this.currentSlide;
+    this.currentSlide = index;
+    // Reset auto-advance timer
+    if (this.heroInterval) clearInterval(this.heroInterval);
+    this.startHeroCarousel();
+    this.cdr.detectChanges();
+  }
+
+  addHeroToCart(product: any): void {
+    this.cartService.addToCart(product, 1);
+    this.heroAddedId = product.id;
+    setTimeout(() => {
+      this.heroAddedId = null;
+      this.cdr.detectChanges();
+    }, 2000);
   }
 
   filter(): void {
@@ -102,20 +148,6 @@ export class CustomerProductList implements OnInit, OnDestroy {
       // Navigate to search results with the category query
       this.router.navigate(['/customer/search'], { queryParams: { q: query } });
     }
-  }
-  
-  startCarousel(): void {
-    this.sliderInterval = setInterval(() => {
-      this.nextSlide();
-    }, 5000);
-  }
-  
-  nextSlide(): void {
-    this.currentSlide = (this.currentSlide + 1) % this.carouselSlides.length;
-  }
-  
-  prevSlide(): void {
-    this.currentSlide = (this.currentSlide - 1 + this.carouselSlides.length) % this.carouselSlides.length;
   }
   
   toggleUserMenu(): void {
@@ -148,5 +180,10 @@ export class CustomerProductList implements OnInit, OnDestroy {
 
   goToCart(): void {
     this.router.navigate(['/customer/cart']);
+  }
+
+  getCategory(categoryId: number): any[] {
+    if (this.filteredProducts.length === 0) return [];
+    return this.filteredProducts.filter(p => p.categoryId === categoryId);
   }
 }
