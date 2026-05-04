@@ -47,7 +47,7 @@
         <div class="preview-stage">
           <!-- Real image -->
           <img *ngIf="product.photos && product.photos.length > 0"
-               [src]="'http://localhost:5020' + product.photos[selectedPhotoIndex]"
+               [src]="apiService.imageUrl(product.photos[selectedPhotoIndex])"
                [alt]="product.name"
                class="preview-main-img" />
 
@@ -62,7 +62,7 @@
                     *ngFor="let photo of product.photos; let i = index"
                     [class.preview-thumb--active]="selectedPhotoIndex === i"
                     (click)="selectedPhotoIndex = i">
-              <img [src]="'http://localhost:5020' + photo" [alt]="'Photo ' + (i+1)" />
+              <img [src]="apiService.imageUrl(photo)" [alt]="'Photo ' + (i+1)" />
             </button>
           </div>
         </div>
@@ -169,7 +169,7 @@
             <!-- Thumbnail or letter -->
             <div class="related-av">
               <img *ngIf="item.photos && item.photos.length > 0"
-                   [src]="'http://localhost:5020' + item.photos[0]"
+                   [src]="apiService.imageUrl(item.photos[0])"
                    [alt]="item.name"
                    style="width:100%;height:100%;object-fit:cover;border-radius:8px;" />
               <span *ngIf="!item.photos || item.photos.length === 0">{{ item.name?.charAt(0) }}</span>

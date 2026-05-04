@@ -235,7 +235,7 @@
           <!-- Image -->
           <div class="sr-card-image">
             <img *ngIf="product.photos && product.photos.length > 0"
-                 [src]="'http://localhost:5020' + product.photos[0]"
+                 [src]="apiService.imageUrl(product.photos[0])"
                  [alt]="product.name"
                  class="sr-card-img" />
             <div class="sr-card-placeholder" *ngIf="!product.photos || product.photos.length === 0">

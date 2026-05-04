@@ -12,63 +12,90 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 5020 } ],
       "UpstreamPathTemplate": "/gateway/catalog/categories",
-      "UpstreamHttpMethod": [ "GET" ]
+      "UpstreamHttpMethod": [ "GET" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
     },
     {
       "DownstreamPathTemplate": "/api/products",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 5020 } ],
       "UpstreamPathTemplate": "/gateway/catalog/products",
-      "UpstreamHttpMethod": [ "GET", "POST" ]
+      "UpstreamHttpMethod": [ "GET", "POST" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
     },
     {
       "DownstreamPathTemplate": "/api/products/archived",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 5020 } ],
       "UpstreamPathTemplate": "/gateway/catalog/products/archived",
-      "UpstreamHttpMethod": [ "GET" ]
+      "UpstreamHttpMethod": [ "GET" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
     },
     {
       "DownstreamPathTemplate": "/api/products/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 5020 } ],
       "UpstreamPathTemplate": "/gateway/catalog/products/{everything}",
-      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
     },
     {
       "DownstreamPathTemplate": "/api/workflow/products/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 5030 } ],
       "UpstreamPathTemplate": "/gateway/workflow/{everything}",
-      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
     },
     {
       "DownstreamPathTemplate": "/api/reports/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 5040 } ],
       "UpstreamPathTemplate": "/gateway/admin/reports/{everything}",
-      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
     },
     {
       "DownstreamPathTemplate": "/api/audit/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 5040 } ],
       "UpstreamPathTemplate": "/gateway/admin/audit/{everything}",
-      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
     },
     {
       "DownstreamPathTemplate": "/api/search/suggest",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 5050 } ],
       "UpstreamPathTemplate": "/gateway/search/suggest",
-      "UpstreamHttpMethod": [ "GET" ]
+      "UpstreamHttpMethod": [ "GET" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
     },
     {
       "DownstreamPathTemplate": "/api/search",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 5050 } ],
       "UpstreamPathTemplate": "/gateway/search",
-      "UpstreamHttpMethod": [ "GET" ]
+      "UpstreamHttpMethod": [ "GET" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
     },
     {
       "DownstreamPathTemplate": "/health",
@@ -96,6 +123,13 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 5040 } ],
       "UpstreamPathTemplate": "/health/reporting",
+      "UpstreamHttpMethod": [ "GET" ]
+    },
+    {
+      "DownstreamPathTemplate": "/health",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 5050 } ],
+      "UpstreamPathTemplate": "/health/search",
       "UpstreamHttpMethod": [ "GET" ]
     }
   ],

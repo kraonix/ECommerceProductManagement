@@ -13,7 +13,7 @@ import { catchError } from 'rxjs/operators';
 })
 export class StorefrontPreview implements OnInit {
   private route = inject(ActivatedRoute);
-  private apiService = inject(ApiService);
+  public apiService = inject(ApiService);
   private cdr = inject(ChangeDetectorRef);
 
   product: any = null;

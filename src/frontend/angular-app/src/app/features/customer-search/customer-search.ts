@@ -13,7 +13,7 @@ import { Subject, debounceTime, distinctUntilChanged, takeUntil, switchMap, of }
   styleUrl: './customer-search.scss'
 })
 export class CustomerSearch implements OnInit, OnDestroy {
-  private apiService = inject(ApiService);
+  public apiService = inject(ApiService);
   public cartService = inject(CartService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);

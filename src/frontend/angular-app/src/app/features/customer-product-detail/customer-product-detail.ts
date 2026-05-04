@@ -12,7 +12,7 @@ import { CartService } from '../../core/services/cart.service';
 })
 export class CustomerProductDetail implements OnInit {
   private route = inject(ActivatedRoute);
-  private apiService = inject(ApiService);
+  public apiService = inject(ApiService);
   private cartService = inject(CartService);
   private cdr = inject(ChangeDetectorRef);
 

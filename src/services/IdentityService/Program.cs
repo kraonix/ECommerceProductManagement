@@ -114,11 +114,12 @@ app.UseRateLimiter();
 app.MapControllers();
 app.MapHealthChecks("/health");
 
-// Auto-migrate on startup
+// Auto-migrate on startup and seed default accounts
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
     db.Database.Migrate();
+    await IdentityDbContextSeed.SeedAsync(db);
 }
 
 app.Run();

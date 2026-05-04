@@ -27,7 +27,7 @@
 
       <!-- Real image if available -->
       <img *ngIf="product.photos && product.photos.length > 0"
-           [src]="'http://localhost:5020' + product.photos[selectedPhotoIndex]"
+           [src]="apiService.imageUrl(product.photos[selectedPhotoIndex])"
            [alt]="product.name"
            class="pdp-main-img" />
 
@@ -50,7 +50,7 @@
                 *ngFor="let photo of product.photos; let i = index"
                 [class.pdp-thumb--active]="selectedPhotoIndex === i"
                 (click)="selectedPhotoIndex = i">
-          <img [src]="'http://localhost:5020' + photo" [alt]="product.name + ' photo ' + (i+1)" />
+          <img [src]="apiService.imageUrl(photo)" [alt]="product.name + ' photo ' + (i+1)" />
         </button>
       </div>
 

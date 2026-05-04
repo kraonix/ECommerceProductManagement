@@ -2,13 +2,22 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { timeout } from 'rxjs/operators';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
-  private gatewayUrl = 'http://localhost:5000/gateway';
+  private gatewayUrl = environment.gatewayUrl;
   private readonly requestTimeoutMs = 8000;
+
+  /** Resolves a catalog image path to a full URL using the configured base. */
+  imageUrl(path: string | null | undefined): string {
+    if (!path) return '';
+    // Already absolute (e.g. stored as full URL in older records)
+    if (path.startsWith('http://') || path.startsWith('https://')) return path;
+    return `${environment.catalogImageBaseUrl}${path}`;
+  }
 
   constructor(private http: HttpClient) {}
 
@@ -106,5 +115,13 @@ export class ApiService {
   // New Export Method requiring Blob response
   exportDashboardData(): Observable<Blob> {
     return this.withTimeout(this.http.get(`${this.gatewayUrl}/admin/reports/export`, { responseType: 'blob' }));
+  }
+
+  // ── Health ──
+  /** Aggregated health across all 5 services. No auth required. */
+  getSystemHealth(): Observable<any> {
+    // Points directly at the gateway base — not through /gateway prefix
+    const gatewayBase = environment.gatewayUrl.replace('/gateway', '');
+    return this.http.get(`${gatewayBase}/health/all`).pipe(timeout(10000));
   }
 }

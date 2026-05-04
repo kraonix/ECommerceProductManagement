@@ -24,16 +24,27 @@ namespace IdentityService.Services
             if (exists)
                 throw new EmailAlreadyRegisteredException(dto.Email);
 
+            // Normalize role to PascalCase so "admin", "ADMIN", "Admin" all work
+            var normalizedRole = dto.Role?.Trim() ?? string.Empty;
+            normalizedRole = normalizedRole switch
+            {
+                var r when r.Equals("admin", StringComparison.OrdinalIgnoreCase)            => "Admin",
+                var r when r.Equals("productmanager", StringComparison.OrdinalIgnoreCase)   => "ProductManager",
+                var r when r.Equals("contentexecutive", StringComparison.OrdinalIgnoreCase) => "ContentExecutive",
+                var r when r.Equals("customer", StringComparison.OrdinalIgnoreCase)         => "Customer",
+                _ => normalizedRole
+            };
+
             var allowedRoles = new[] { "Admin", "ProductManager", "ContentExecutive", "Customer" };
-            if (!allowedRoles.Contains(dto.Role))
-                throw new ArgumentException("Invalid role specified.");
+            if (!allowedRoles.Contains(normalizedRole))
+                throw new ArgumentException($"Invalid role '{dto.Role}'. Allowed values: Admin, ProductManager, ContentExecutive, Customer.");
 
             var user = new User
             {
-                FullName = dto.FullName,
-                Email = dto.Email,
+                FullName = dto.FullName.Trim(),
+                Email = dto.Email.Trim().ToLowerInvariant(),
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
-                Role = dto.Role
+                Role = normalizedRole
             };
 
             var refreshToken = _jwtService.GenerateRefreshToken();
@@ -57,7 +68,8 @@ namespace IdentityService.Services
 
         public async Task<AuthResponseDto> LoginAsync(LoginRequestDto dto)
         {
-            var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
+            var email = dto.Email.Trim().ToLowerInvariant();
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == email);
             if (user == null || !user.IsActive)
                 throw new InvalidCredentialsException();
 
@@ -84,9 +96,51 @@ namespace IdentityService.Services
         public async Task<AuthResponseDto> RefreshTokenAsync(RefreshTokenRequestDto dto)
         {
             var user = await _db.Users.FirstOrDefaultAsync(u => u.RefreshToken == dto.RefreshToken);
-            if (user == null || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+
+            // Reuse detection: if the submitted token doesn't match any user but the
+            // access token IS valid, a stolen token may have been used after rotation.
+            // In that case we revoke the family by clearing the stored token.
+            if (user == null)
+            {
+                // Try to identify the user from the access token to revoke their session
+                try
+                {
+                    var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+                    if (handler.CanReadToken(dto.Token))
+                    {
+                        var jwt = handler.ReadJwtToken(dto.Token);
+                        var userIdClaim = jwt.Claims
+                            .FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier
+                                              || c.Type == "nameid"
+                                              || c.Type == "sub");
+                        if (userIdClaim != null && int.TryParse(userIdClaim.Value, out var uid))
+                        {
+                            var staleUser = await _db.Users.FindAsync(uid);
+                            if (staleUser != null)
+                            {
+                                // Revoke the entire session — token reuse detected
+                                staleUser.RefreshToken = null;
+                                staleUser.RefreshTokenExpiryTime = null;
+                                await _db.SaveChangesAsync();
+                            }
+                        }
+                    }
+                }
+                catch { /* best-effort — still throw below */ }
+
                 throw new TokenValidationException("Invalid or expired refresh token.");
-            
+            }
+
+            if (user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+            {
+                // Expired — clear it and force re-login
+                user.RefreshToken = null;
+                user.RefreshTokenExpiryTime = null;
+                await _db.SaveChangesAsync();
+                throw new TokenValidationException("Refresh token has expired. Please log in again.");
+            }
+
+            // Rotate: issue a new refresh token and invalidate the old one immediately
             var newRefreshToken = _jwtService.GenerateRefreshToken();
             user.RefreshToken = newRefreshToken;
             user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);

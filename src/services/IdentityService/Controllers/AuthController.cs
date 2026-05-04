@@ -1,8 +1,10 @@
+using IdentityService.Data;
 using IdentityService.DTOs;
 using IdentityService.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace IdentityService.Controllers
@@ -13,10 +15,12 @@ namespace IdentityService.Controllers
     public class AuthController : ControllerBase
     {
         private readonly AuthService _authService;
+        private readonly IdentityDbContext _db;
 
-        public AuthController(AuthService authService)
+        public AuthController(AuthService authService, IdentityDbContext db)
         {
             _authService = authService;
+            _db = db;
         }
 
         [HttpPost("signup")]
@@ -77,6 +81,42 @@ namespace IdentityService.Controllers
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
             var profile = await _authService.GetUserProfileAsync(userId);
             return Ok(profile);
+        }
+
+        /// <summary>
+        /// DB diagnostic — returns user count and registered emails.
+        /// Admin only. GET /api/auth/db-status
+        /// </summary>
+        [Authorize(Roles = "Admin")]
+        [HttpGet("db-status")]
+        public async Task<IActionResult> DbStatus()
+        {
+            try
+            {
+                var canConnect = await _db.Database.CanConnectAsync();
+                if (!canConnect)
+                    return StatusCode(503, new { connected = false, message = "Cannot connect to database." });
+
+                var users = await _db.Users
+                    .Select(u => new { u.UserId, u.Email, u.Role, u.IsActive, u.CreatedAt })
+                    .OrderBy(u => u.CreatedAt)
+                    .ToListAsync();
+
+                var appliedMigrations = await _db.Database.GetAppliedMigrationsAsync();
+
+                return Ok(new
+                {
+                    connected        = true,
+                    database         = _db.Database.GetDbConnection().Database,
+                    userCount        = users.Count,
+                    users,
+                    appliedMigrations
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(503, new { connected = false, message = ex.Message });
+            }
         }
     }
 }

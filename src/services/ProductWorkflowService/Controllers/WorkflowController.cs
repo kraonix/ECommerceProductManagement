@@ -54,6 +54,9 @@ namespace ProductWorkflowService.Controllers
         [Authorize(Roles = "Admin")] // TC12 Security constraint
         public async Task<IActionResult> UpdateStatus(int id, StatusUpdateDto dto)
         {
+            if (!dto.IsValidStatus())
+                return BadRequest(new { message = $"Invalid status value '{dto.Status}'. Allowed: Draft, In Enrichment, Ready for Review, Approved, Rejected, Published, Archived." });
+
             try
             {
                 var admin = User.FindFirstValue(ClaimTypes.Email) ?? "admin";

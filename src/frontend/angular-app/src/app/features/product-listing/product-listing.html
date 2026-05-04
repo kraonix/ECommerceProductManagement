@@ -132,7 +132,7 @@
                        (click)="openEditDrawer(p)"
                        title="Edit product">
                     <img *ngIf="p.photos && p.photos.length > 0"
-                         [src]="'http://localhost:5020' + p.photos[0]"
+                         [src]="apiService.imageUrl(p.photos[0])"
                          style="width:100%;height:100%;object-fit:cover;border-radius:10px;" />
                     <span *ngIf="!p.photos || p.photos.length === 0">{{ p.name.charAt(0) }}</span>
                     <span class="ob-cell-av-hint">
@@ -243,7 +243,7 @@
                   <div class="ob-cell-product">
                     <div class="ob-cell-av ob-cell-av--archived">
                       <img *ngIf="p.photos && p.photos.length > 0"
-                           [src]="'http://localhost:5020' + p.photos[0]"
+                           [src]="apiService.imageUrl(p.photos[0])"
                            style="width:100%;height:100%;object-fit:cover;border-radius:10px;opacity:0.5;" />
                       <span *ngIf="!p.photos || p.photos.length === 0">{{ p.name.charAt(0) }}</span>
                     </div>
@@ -422,7 +422,7 @@
       <!-- Existing photos -->
       <div class="ob-photo-grid" *ngIf="editPhotos.length > 0">
         <div class="ob-photo-item" *ngFor="let photo of editPhotos">
-          <img [src]="'http://localhost:5020' + photo.url" [alt]="'Product image'" />
+          <img [src]="apiService.imageUrl(photo.url)" [alt]="'Product image'" />
           <button class="ob-photo-delete" [disabled]="isDeletingMedia" (click)="deletePhoto(photo.mediaId)" title="Delete image">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>

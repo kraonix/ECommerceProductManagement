@@ -8,16 +8,30 @@ import { BehaviorSubject, catchError, filter, switchMap, take, throwError, timeo
 let isRefreshing = false;
 const refreshTokenSubject = new BehaviorSubject<string | null>(null);
 
+/** Auth endpoints that should never trigger a token refresh on 401. */
+const AUTH_PASSTHROUGH_PATHS = [
+  '/auth/login',
+  '/auth/signup',
+  '/auth/refresh-token',
+  '/auth/forgot-password',
+  '/auth/reset-password',
+];
+
+function isAuthEndpoint(url: string): boolean {
+  return AUTH_PASSTHROUGH_PATHS.some(path => url.includes(path));
+}
+
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
   const apiService = inject(ApiService);
   const token = localStorage.getItem('jwt_token');
 
-  // Skip auth header for the refresh-token endpoint itself to avoid loops
-  const isRefreshCall = req.url.includes('/auth/refresh-token');
+  // Never attach a Bearer token to auth endpoints — they don't need it
+  // and attaching one causes confusing 401 replays on wrong-password errors.
+  const isAuthCall = isAuthEndpoint(req.url);
 
   let authReq = req;
-  if (token && !isRefreshCall) {
+  if (token && !isAuthCall) {
     authReq = req.clone({
       setHeaders: { Authorization: `Bearer ${token}` }
     });
@@ -25,7 +39,9 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
-      if (error.status === 401 && token && !isRefreshCall) {
+      // Only attempt token refresh for 401s on protected (non-auth) endpoints
+      // where we actually have a token that may have expired.
+      if (error.status === 401 && token && !isAuthCall) {
         const refreshToken = localStorage.getItem('refresh_token');
 
         if (!refreshToken) {

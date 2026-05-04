@@ -42,7 +42,14 @@ export class Login {
     this.errorMessage = '';
     this.successMessage = '';
     if (form) form.resetForm();
-    if (mode === AuthMode.SIGNUP) this.signupData.role = 'Admin';
+    // Reset role after form reset so Angular's form control re-initialization
+    // doesn't wipe the value we set
+    if (mode === AuthMode.SIGNUP) {
+      setTimeout(() => {
+        this.signupData.role = 'Admin';
+        this.cdr.detectChanges();
+      });
+    }
     this.cdr.detectChanges();
   }
 
@@ -119,7 +126,16 @@ export class Login {
     console.error('Core Auth Rejection Payload:', error);
 
     if (error.status === 0) {
-      this.errorMessage = 'Network isolation detected. Please verify gateway servers are booted and live.';
+      this.errorMessage = 'Cannot reach the server. Please verify all services are running.';
+    } else if (error.status === 401) {
+      // Wrong credentials — give a clear, direct message
+      if (this.currentMode === AuthMode.LOGIN) {
+        this.errorMessage = 'Incorrect email or password. Please try again.';
+      } else {
+        this.errorMessage = error.error?.detail || error.error?.message || 'Authentication failed.';
+      }
+    } else if (error.status === 429) {
+      this.errorMessage = 'Too many attempts. Please wait a moment before trying again.';
     } else if (error.error && error.error.detail) {
       // Direct Exception Mapping via GlobalExceptionHandler
       this.errorMessage = error.error.detail;
@@ -127,7 +143,7 @@ export class Login {
       // Standard validation boundaries breaking
       this.errorMessage = Object.values(error.error.errors).flat().join(' | ');
     } else {
-      this.errorMessage = error.error?.message || 'Access interaction prohibited by authorization schema boundaries.';
+      this.errorMessage = error.error?.message || 'Something went wrong. Please try again.';
     }
     this.cdr.detectChanges();
   }

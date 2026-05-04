@@ -1,16 +1,33 @@
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace SearchService.Models
 {
     public class SearchRequest
     {
+        [MaxLength(200)]
         public string? Query { get; set; }
+
+        [MaxLength(100)]
         public string? Brand { get; set; }
+
+        [Range(0, 1_000_000)]
         public decimal? MinPrice { get; set; }
+
+        [Range(0, 1_000_000)]
         public decimal? MaxPrice { get; set; }
+
         public bool InStockOnly { get; set; } = false;
-        public string SortBy { get; set; } = "relevance"; // relevance | price-asc | price-desc | name-asc | newest
+
+        // Allowed values enforced in SearchEngine
+        [MaxLength(20)]
+        public string SortBy { get; set; } = "relevance";
+
+        [Range(1, int.MaxValue)]
         public int Page { get; set; } = 1;
+
+        // Controller already clamps this to 1–100 via Math.Clamp
+        [Range(1, 100)]
         public int PageSize { get; set; } = 20;
     }
 

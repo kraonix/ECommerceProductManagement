@@ -12,7 +12,7 @@ import { CartService } from '../../core/services/cart.service';
   styleUrl: './customer-product-list.scss'
 })
 export class CustomerProductList implements OnInit, OnDestroy {
-  private apiService = inject(ApiService);
+  public apiService = inject(ApiService);
   public cartService = inject(CartService); // public for template binding
   private cdr = inject(ChangeDetectorRef);
   private router = inject(Router);

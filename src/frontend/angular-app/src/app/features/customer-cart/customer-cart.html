@@ -47,7 +47,7 @@
         <div class="cart-item" *ngFor="let item of items">
           <div class="item-thumbnail">
             <img *ngIf="item.imageUrl"
-                 [src]="item.imageUrl.startsWith('http') ? item.imageUrl : 'http://localhost:5020' + item.imageUrl"
+                 [src]="item.imageUrl"
                  alt="product thumbnail"
                  (error)="item.imageUrl = undefined" />
             <div *ngIf="!item.imageUrl" class="item-placeholder">{{ item.name.charAt(0) }}</div>

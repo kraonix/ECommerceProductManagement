@@ -52,7 +52,7 @@ export class ProductListing implements OnInit {
   isDeletingProduct = false;
   deleteProductError = '';
 
-  private apiService = inject(ApiService);
+  public apiService = inject(ApiService);
   private cdr = inject(ChangeDetectorRef);
 
   ngOnInit() {

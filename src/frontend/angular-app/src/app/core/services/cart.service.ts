@@ -1,4 +1,5 @@
 import { Injectable, signal, computed } from '@angular/core';
+import { environment } from '../../../environments/environment';
 
 export interface CartItem {
   productId: number;
@@ -54,9 +55,9 @@ export class CartService {
         name: product.name,
         price: product.price,
         quantity: quantity,
-        // Store full URL so cart can display images directly
+        // Build absolute image URL using environment config
         imageUrl: (product.photos && product.photos.length > 0)
-          ? 'http://localhost:5020' + product.photos[0]
+          ? `${environment.catalogImageBaseUrl}${product.photos[0]}`
           : undefined
       });
     }
